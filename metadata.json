@@ -1,0 +1,7 @@
+{
+  "name": "CrisisGuardian",
+  "description": "An interactive digital platform for schools and colleges in India to provide disaster preparedness education. It features region-specific modules, virtual drills powered by AI, and administrative dashboards to enhance campus safety and build a disaster-resilient society.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
