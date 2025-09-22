@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, User, UserRole, Theme } from '../types';
 import { INDIAN_STATES, DEFAULT_AVATARS } from '../constants';
-import { ShieldCheckIcon, MapPinIcon, LogoutIcon, UserCircleIcon, SunIcon, MoonIcon } from './icons/Icons';
+import { CrisisGuardianLogo, MapPinIcon, LogoutIcon, UserCircleIcon, SunIcon, MoonIcon } from './icons/Icons';
 
 interface HeaderProps {
   currentView: View;
@@ -59,8 +59,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, region, setRegion
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
-            <span className="ml-2 text-xl font-bold text-slate-800 dark:text-white">CrisisGuardian</span>
+            <CrisisGuardianLogo />
           </div>
           <nav className="hidden md:flex items-center space-x-4">
             {availableNavItems.map((item) => (

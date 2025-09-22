@@ -7,6 +7,10 @@ const SESSION_KEY = 'crisis_guardian_session';
 const OTP_KEY = 'crisis_guardian_otp';
 const INSTITUTIONS_DB_KEY = 'crisis_guardian_institutions';
 
+// Clear the user and session database on every application load to simulate a reset.
+localStorage.removeItem(USERS_DB_KEY);
+localStorage.removeItem(SESSION_KEY);
+
 // --- Institution Database Simulation ---
 
 interface InstitutionsDB {

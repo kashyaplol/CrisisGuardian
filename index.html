@@ -14,45 +14,43 @@
       font-family: 'Inter', sans-serif;
     }
     
-    /* Login Page Animations */
-    @keyframes gradient-animation {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    /* New Auth Page Animations */
+    @keyframes fade-in-slow {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
-    .animated-gradient {
-      background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b);
-      background-size: 400% 400%;
-      animation: gradient-animation 20s ease infinite;
+    .animate-fade-in-slow {
+      animation: fade-in-slow 1s ease-out forwards;
     }
 
-    @keyframes fade-in-up {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    @keyframes slide-in-from-right {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
-    .animate-fade-in-up {
-        animation: fade-in-up 0.8s ease-out forwards;
+    .animate-slide-in-from-right {
+      animation: slide-in-from-right 0.6s ease-out forwards;
+      animation-delay: 0.2s; /* Start after brand panel fades in */
+      opacity: 0; /* Start hidden */
+      animation-fill-mode: forwards;
     }
-
+    
     /* Main View Transition Animation */
     @keyframes view-fade-in {
       from {
         opacity: 0;
-        transform: translateY(15px);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
       }
     }
     .view-container-animation {
-      animation: view-fade-in 0.5s ease-out forwards;
+      animation: view-fade-in 0.4s ease-out forwards;
     }
     
     /* Animations for Virtual Drill */
@@ -104,6 +102,14 @@
       animation: wind-blow 2.5s linear infinite;
     }
   </style>
+  <script>
+    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  </script>
 <script type="importmap">
 {
   "imports": {

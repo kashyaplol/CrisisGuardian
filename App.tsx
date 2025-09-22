@@ -225,7 +225,7 @@ const App: React.FC = () => {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200">
+      <div key={currentView} className="view-container-animation">
         {renderAuthView()}
       </div>
     );

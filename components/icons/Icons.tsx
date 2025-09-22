@@ -2,6 +2,35 @@ import React from 'react';
 
 type IconProps = React.SVGProps<SVGSVGElement>;
 
+export const CrisisGuardianLogo: React.FC<{ className?: string }> = ({ className }) => (
+    <div className={`flex items-center ${className}`}>
+      <svg width="40" height="40" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10">
+        <path d="M28 20.3333V35.6666" stroke="#0F172A" className="dark:stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M32.6667 22.6667V33.3333" stroke="#0F172A" className="dark:stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M23.3333 22.6667V33.3333" stroke="#0F172A" className="dark:stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M37.3333 25V31" stroke="#0F172A" className="dark:stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M18.6667 25V31" stroke="#0F172A" className="dark:stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M28 49C32.9706 49 37 44.9706 37 40C37 35.0294 32.9706 31 28 31C23.0294 31 19 35.0294 19 40C19 44.9706 23.0294 49 28 49Z" stroke="#0F172A" className="dark:stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M28 37.3333L30.3333 39.6666" stroke="#0F172A" className="dark:stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M44.3334 38.6667C44.3334 38.6667 42.0001 34.6667 38.6667 33.3334" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M48.0001 44.3333C48.0001 44.3333 44.6667 43 43 40.3333" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M49 33.3333C49 33.3333 44.3333 31 40.3333 33.3333" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M11.6666 38.6667C11.6666 38.6667 13.9999 34.6667 17.3333 33.3334" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M17.3334 17.3333C17.3334 17.3333 15.0001 21.3333 11.6667 22.6666" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M7.99992 11.6667C7.99992 11.6667 11.3333 13 12.9999 15.6667" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M7 22.6667C7 22.6667 11.6667 25 15.6667 22.6667" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M38.6666 17.3333C38.6666 17.3333 40.9999 21.3333 44.3333 22.6666L45 20.3333" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M48 11.6667C48 11.6667 44.6666 13 43 15.6667" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M49 22.6667C49 22.6667 44.3333 25 40.3333 22.6667" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M35.6667 14.3333C35.6667 10.2926 32.2074 7 28 7C23.7927 7 20.3334 10.2926 20.3334 14.3333V38C20.3334 39.8409 21.8258 41.3333 23.6667 41.3333H32.3334C34.1743 41.3333 35.6667 39.8409 35.6667 38V14.3333Z" stroke="#0F172A" className="dark:stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      <div className="ml-2">
+        <span className="block text-lg font-bold tracking-tight leading-tight text-slate-800 dark:text-white">CRISISGUARDIAN</span>
+        <span className="hidden md:block text-xs font-medium text-slate-500 dark:text-slate-400">Secure. Smart. Prepared.</span>
+      </div>
+    </div>
+);
+
 export const ShieldCheckIcon: React.FC<IconProps> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008h-.008v-.008z" />
