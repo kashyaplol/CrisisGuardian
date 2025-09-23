@@ -15,6 +15,7 @@ import Profile from './components/Profile';
 import RegisterInstitution from './components/RegisterInstitution';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
+import VideoLessons from './components/VideoLessons';
 import { DEFAULT_AVATARS } from './constants';
 import * as authService from './services/authService';
 import * as analyticsService from './services/analyticsService';
@@ -52,7 +53,8 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    const checkUserSession = async () => {
+    const initializeApp = async () => {
+        await authService.seedInitialUsers();
         const loggedInUser = await authService.checkSession();
         if (loggedInUser) {
             setCurrentUser(loggedInUser);
@@ -60,7 +62,7 @@ const App: React.FC = () => {
         }
         setIsLoading(false);
     };
-    checkUserSession();
+    initializeApp();
   }, []);
 
   useEffect(() => {
@@ -246,6 +248,8 @@ const App: React.FC = () => {
         return <Home setView={setCurrentView} user={currentUser} />;
       case 'modules':
         return <EducationModules />;
+      case 'videoLessons':
+        return <VideoLessons user={currentUser} />;
       case 'drills':
         return <DrillsLobby onStartDrill={handleStartDrill} />;
       case 'drill':

@@ -59,7 +59,7 @@ export interface DrillStep {
   aiAdvice: string;
 }
 
-export type View = 'welcome' | 'signup' | 'login' | 'verifyOtp' | 'home' | 'modules' | 'drills' | 'drill' | 'dashboard' | 'contacts' | 'profile' | 'registerInstitution' | 'forgotPassword' | 'resetPassword';
+export type View = 'welcome' | 'signup' | 'login' | 'verifyOtp' | 'home' | 'modules' | 'drills' | 'drill' | 'dashboard' | 'contacts' | 'profile' | 'registerInstitution' | 'forgotPassword' | 'resetPassword' | 'videoLessons';
 
 export type Theme = 'light' | 'dark';
 
@@ -76,3 +76,5 @@ export interface AnalyticsData {
   drillsByType: { [key in DisasterType]?: number };
   scoresByType: { [key in DisasterType]?: { scoreSum: number; questionSum: number; count: number } };
 }
+
+export type VideoStyle = 'cartoon' | 'realistic';

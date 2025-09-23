@@ -47,6 +47,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, region, setRegion
     const navItems: { view: View; label: string; requiredRole?: UserRole }[] = [
     { view: 'home', label: 'Home' },
     { view: 'modules', label: 'Study Modules' },
+    { view: 'videoLessons', label: 'Video Lessons' },
     { view: 'drills', label: 'Virtual Drills' },
     { view: 'dashboard', label: 'Dashboard', requiredRole: UserRole.Admin },
     { view: 'contacts', label: 'Contacts' },

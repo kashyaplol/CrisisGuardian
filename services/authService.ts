@@ -1,6 +1,6 @@
 // services/authService.ts
-import { User } from '../types';
-import { INDIAN_SCHOOLS, NIRF_COLLEGES } from '../constants';
+import { User, UserRole } from '../types';
+import { INDIAN_SCHOOLS, NIRF_COLLEGES, DEFAULT_AVATARS } from '../constants';
 
 const USERS_DB_KEY = 'crisis_guardian_users';
 const SESSION_KEY = 'crisis_guardian_session';
@@ -86,6 +86,49 @@ export const getAllUsers = async (): Promise<User[]> => {
 const saveUsers = async (users: Record<string, User>) => {
   await asyncLocalStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
 };
+
+export const seedInitialUsers = async () => {
+    const users = await getUsers();
+    let usersModified = false;
+
+    // Test Student
+    const studentEmail = 'student@test.com';
+    if (!users[studentEmail]) {
+        users[studentEmail] = {
+            name: 'Test Student',
+            email: studentEmail,
+            password: 'password',
+            role: UserRole.Student,
+            institution: 'Indian Institute of Technology Madras',
+            score: 78,
+            avatar: DEFAULT_AVATARS[1].id,
+            drillHistory: [],
+        };
+        usersModified = true;
+    }
+
+    // Test Admin
+    const adminEmail = 'admin@test.com';
+    if (!users[adminEmail]) {
+        users[adminEmail] = {
+            name: 'Test Admin',
+            email: adminEmail,
+            password: 'password',
+            role: UserRole.Admin,
+            institution: 'CrisisGuardian HQ',
+            score: 0,
+            avatar: DEFAULT_AVATARS[2].id,
+            drillHistory: [],
+        };
+        usersModified = true;
+    }
+
+    if (usersModified) {
+        await saveUsers(users);
+        console.log('[CrisisGuardian] Initial test users seeded.');
+    }
+};
+
 
 export const findUserByEmail = async (email: string): Promise<User | null> => {
   const users = await getUsers();

@@ -1,7 +1,8 @@
 
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { DisasterType, DrillStep, DrillStepOption } from '../types';
+import { DisasterType, DrillStep, DrillStepOption, VideoStyle } from '../types';
+import { DISASTER_MODULES } from '../constants';
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable is not set.");
@@ -105,4 +106,74 @@ export const generateDrillScenario = async (disasterType: DisasterType, region: 
     console.error("Error generating drill scenario:", error);
     return null;
   }
+};
+
+export const generateVideoLesson = async (disasterType: DisasterType, videoStyle: VideoStyle): Promise<Blob> => {
+    try {
+        let prompt: string;
+        
+        const module = DISASTER_MODULES.find(m => m.type === disasterType);
+        if (!module) {
+            throw new Error(`No disaster module found for type: ${disasterType}`);
+        }
+
+        // Use all key points for a comprehensive video.
+        const keyTopics = module.studyMaterial.keyPoints.map(p => `${p.title}: ${p.detail}`).join('; ');
+
+        if (videoStyle === 'cartoon') {
+            prompt = `Create a comprehensive animated educational cartoon for school students in India about safety during an ${disasterType}. The video must have a clear, friendly voice-over narrating the safety tips and simple, engaging sound effects. The style should be simple and visually appealing to a young audience. The video should cover the following key safety actions in detail: ${keyTopics}.`;
+        } else { // realistic
+            prompt = `Create a comprehensive educational video for college students in India about advanced safety protocols during a ${disasterType}. The style should be a realistic simulation with a professional voice-over and realistic sound effects. The module should be complex and cover these critical topics in detail: ${keyTopics}. Focus on clear, actionable steps for a real-world scenario.`;
+        }
+
+        let operation = await ai.models.generateVideos({
+            model: 'veo-2.0-generate-001',
+            prompt: prompt,
+            config: {
+                numberOfVideos: 1
+            }
+        });
+
+        // Polling loop
+        while (!operation.done) {
+            await new Promise(resolve => setTimeout(resolve, 10000)); // Poll every 10 seconds
+            operation = await ai.operations.getVideosOperation({ operation: operation });
+        }
+
+        if (operation.error) {
+            console.error("Video generation operation failed:", operation.error);
+            throw new Error(operation.error.message || "Video generation operation failed inside the AI model.");
+        }
+
+        const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+        
+        if (!downloadLink) {
+            throw new Error("Video generation finished but no download link was provided.");
+        }
+
+        const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+        if (!response.ok) {
+            throw new Error(`Failed to download video file. Status: ${response.status} ${response.statusText}`);
+        }
+
+        const videoBlob = await response.blob();
+        return videoBlob;
+
+    } catch (error) {
+        console.error("Error during video generation process:", error);
+        
+        // Create a user-friendly message for the specific quota error.
+        const errorMessage = JSON.stringify(error);
+        if (errorMessage.includes("RESOURCE_EXHAUSTED") || errorMessage.includes("429")) {
+             throw new Error("You have exceeded your video generation quota. Please check your plan and billing details, or try again later.");
+        }
+
+        if (error instanceof Error) {
+            // Re-throw the original error if it's already an Error instance
+            throw error;
+        }
+
+        // For other types of errors, wrap them
+        throw new Error("An unexpected error occurred during video generation. Please check the console for details.");
+    }
 };

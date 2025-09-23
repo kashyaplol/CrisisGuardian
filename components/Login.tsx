@@ -14,6 +14,17 @@ const Login: React.FC<LoginProps> = ({ onLogin, setView }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
+  const handleTestLogin = (role: 'student' | 'admin') => {
+    if (role === 'student') {
+        setEmail('student@test.com');
+        setPassword('password');
+    } else {
+        setEmail('admin@test.com');
+        setPassword('password');
+    }
+    setError(''); // Clear any previous errors
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -131,6 +142,27 @@ const Login: React.FC<LoginProps> = ({ onLogin, setView }) => {
                 )}
               </button>
             </form>
+
+            <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h4 className="text-sm font-semibold text-center text-slate-600 dark:text-slate-400 mb-3">For Testing & Demo</h4>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                    type="button"
+                    onClick={() => handleTestLogin('student')}
+                    className="w-full text-sm bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                    >
+                    Login as Student
+                    </button>
+                    <button
+                    type="button"
+                    onClick={() => handleTestLogin('admin')}
+                    className="w-full text-sm bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                    >
+                    Login as Admin
+                    </button>
+                </div>
+            </div>
+
              <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-6">
                 Don't have an account?{' '}
                 <button onClick={() => setView('signup')} className="font-semibold text-blue-600 hover:underline dark:text-blue-400">
