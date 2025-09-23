@@ -1,8 +1,12 @@
 
 
+
+
+
+
 import { GoogleGenAI, Type } from "@google/genai";
-import { DisasterType, DrillStep, DrillStepOption, VideoStyle } from '../types';
-import { DISASTER_MODULES } from '../constants';
+import { DisasterType, DrillStep, DrillStepOption } from '../types';
+
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable is not set.");
@@ -57,6 +61,54 @@ interface PreviousStepContext {
     userAnswer: DrillStepOption;
 }
 
+const VIDEO_LESSON_PROMPTS: Record<DisasterType, string> = {
+  [DisasterType.Earthquake]: `
+    Generate a concise 2-4 minute video lesson on Earthquake Safety. The visual style should be clear and authoritative yet reassuring. Use high-quality animation or realistic scenarios. Include text overlays for key points and a professional, calm voiceover. Subtly include the CrisisGuardian logo.
+
+    Title: Earthquake Safety: Drop, Cover, Hold On!
+
+    Content sections:
+    1.  **Introduction**: Briefly explain what an earthquake is and why immediate action is crucial.
+    2.  **"Drop, Cover, Hold On" Demonstration**: Visually demonstrate and explain each step: Drop to the ground, Cover under a sturdy table or desk, and Hold On until shaking stops.
+    3.  **Other Scenarios**: Provide specific visual instructions for being outdoors, in bed, or in a car during an earthquake.
+    4.  **After the Shaking**: Advise on checking for injuries and hazards like gas leaks. Show a phone screen with the CrisisGuardian app's 'I Am Safe' feature being used.
+    5.  **Preparedness Tip**: End with a quick visual of securing heavy furniture and an emergency kit.
+  `,
+  [DisasterType.Flood]: `
+    Generate a concise 2-4 minute video lesson on Flood Preparedness. The visual style should be clear and authoritative yet reassuring. Use high-quality animation or realistic scenarios. Include text overlays for key points and a professional, calm voiceover. Subtly include the CrisisGuardian logo.
+
+    Title: Flood Preparedness: Rising Waters, Smart Choices
+
+    Content sections:
+    1.  **Introduction**: Define different types of floods (flash flood, riverine flood) and their dangers.
+    2.  **Before a Flood**: Show visuals for preparing an emergency kit with waterproof containers, planning an evacuation route, and simple property protection like moving valuables higher.
+    3.  **During a Flood**: Visually reinforce the "Turn Around, Don't Drown!" message for cars and pedestrians. Show a phone screen with the CrisisGuardian app displaying real-time flood warnings. Illustrate moving to higher ground.
+    4.  **After a Flood**: Briefly cover safety tips for returning home, such as checking utilities and being aware of contamination.
+  `,
+  [DisasterType.Fire]: `
+    Generate a concise 2-4 minute video lesson on Fire Emergency safety. The visual style should be clear and authoritative yet reassuring. Use high-quality animation or realistic scenarios. Include text overlays for key points and a professional, calm voiceover. Subtly include the CrisisGuardian logo.
+
+    Title: Fire Emergency: Prevent, Plan, Protect!
+
+    Content sections:
+    1.  **Introduction**: Emphasize the speed and danger of fires.
+    2.  **Fire Prevention**: Show quick visuals for checking smoke alarm batteries, kitchen safety (not leaving cooking unattended), and avoiding overloaded outlets.
+    3.  **Fire Escape Plan**: Animate a family practicing their escape route, emphasizing two ways out and a safe outdoor meeting point.
+    4.  **If a Fire Occurs**: Demonstrate crawling low under smoke, the "Stop, Drop, and Roll" technique, and closing doors to slow the fire. The main message should be "Get Out, Stay Out, Call for help!".
+  `,
+  [DisasterType.Cyclone]: `
+    Generate a concise 2-4 minute video lesson on Cyclone and Hurricane preparedness. The visual style should be clear and authoritative yet reassuring. Use high-quality animation or realistic scenarios. Include text overlays for key points and a professional, calm voiceover. Subtly include the CrisisGuardian logo.
+
+    Title: Cyclone Alert: Weathering the Storm
+
+    Content sections:
+    1.  **Introduction**: Explain what cyclones are and their impacts (high winds, heavy rain, storm surge).
+    2.  **Before the Storm**: Show a phone screen with the CrisisGuardian app tracking a cyclone. Animate securing loose outdoor items and boarding windows. Reiterate the importance of an emergency kit.
+    3.  **During the Storm**: Show people safely sheltered in an interior room, away from windows. Emphasize obeying official evacuation orders.
+    4.  **After the Storm**: Show post-storm hazards like downed power lines and flooding. The message should be to wait for the official "all-clear" before going outside.
+  `
+};
+
 export const generateDrillScenario = async (disasterType: DisasterType, region: string, previousStepContext?: PreviousStepContext): Promise<DrillStep | null> => {
   
   let prompt: string;
@@ -106,74 +158,4 @@ export const generateDrillScenario = async (disasterType: DisasterType, region: 
     console.error("Error generating drill scenario:", error);
     return null;
   }
-};
-
-export const generateVideoLesson = async (disasterType: DisasterType, videoStyle: VideoStyle): Promise<Blob> => {
-    try {
-        let prompt: string;
-        
-        const module = DISASTER_MODULES.find(m => m.type === disasterType);
-        if (!module) {
-            throw new Error(`No disaster module found for type: ${disasterType}`);
-        }
-
-        // Use all key points for a comprehensive video.
-        const keyTopics = module.studyMaterial.keyPoints.map(p => `${p.title}: ${p.detail}`).join('; ');
-
-        if (videoStyle === 'cartoon') {
-            prompt = `Create a comprehensive animated educational cartoon for school students in India about safety during an ${disasterType}. The video must have a clear, friendly voice-over narrating the safety tips and simple, engaging sound effects. The style should be simple and visually appealing to a young audience. The video should cover the following key safety actions in detail: ${keyTopics}.`;
-        } else { // realistic
-            prompt = `Create a comprehensive educational video for college students in India about advanced safety protocols during a ${disasterType}. The style should be a realistic simulation with a professional voice-over and realistic sound effects. The module should be complex and cover these critical topics in detail: ${keyTopics}. Focus on clear, actionable steps for a real-world scenario.`;
-        }
-
-        let operation = await ai.models.generateVideos({
-            model: 'veo-2.0-generate-001',
-            prompt: prompt,
-            config: {
-                numberOfVideos: 1
-            }
-        });
-
-        // Polling loop
-        while (!operation.done) {
-            await new Promise(resolve => setTimeout(resolve, 10000)); // Poll every 10 seconds
-            operation = await ai.operations.getVideosOperation({ operation: operation });
-        }
-
-        if (operation.error) {
-            console.error("Video generation operation failed:", operation.error);
-            throw new Error(operation.error.message || "Video generation operation failed inside the AI model.");
-        }
-
-        const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-        
-        if (!downloadLink) {
-            throw new Error("Video generation finished but no download link was provided.");
-        }
-
-        const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-        if (!response.ok) {
-            throw new Error(`Failed to download video file. Status: ${response.status} ${response.statusText}`);
-        }
-
-        const videoBlob = await response.blob();
-        return videoBlob;
-
-    } catch (error) {
-        console.error("Error during video generation process:", error);
-        
-        // Create a user-friendly message for the specific quota error.
-        const errorMessage = JSON.stringify(error);
-        if (errorMessage.includes("RESOURCE_EXHAUSTED") || errorMessage.includes("429")) {
-             throw new Error("You have exceeded your video generation quota. Please check your plan and billing details, or try again later.");
-        }
-
-        if (error instanceof Error) {
-            // Re-throw the original error if it's already an Error instance
-            throw error;
-        }
-
-        // For other types of errors, wrap them
-        throw new Error("An unexpected error occurred during video generation. Please check the console for details.");
-    }
 };
