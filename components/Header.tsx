@@ -192,13 +192,13 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, region, setRegion
                 </nav>
 
                 <div className="mt-auto space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center justify-between p-2">
-                        <label htmlFor="region-select-mobile" className="text-sm font-medium text-slate-700 dark:text-slate-300">Region</label>
+                    <div className="flex items-center p-2">
+                        <label htmlFor="region-select-mobile" className="text-sm font-medium text-slate-700 dark:text-slate-300 mr-4">Region</label>
                         <select
                             id="region-select-mobile"
                             value={region}
                             onChange={(e) => setRegion(e.target.value)}
-                            className="bg-slate-100 border border-slate-300 rounded-md py-1.5 px-2 text-sm text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300"
+                            className="flex-1 min-w-0 bg-slate-100 border border-slate-300 rounded-md py-1.5 px-2 text-sm text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 truncate"
                         >
                             {INDIAN_STATES.map((state) => <option key={state} value={state}>{state}</option>)}
                         </select>

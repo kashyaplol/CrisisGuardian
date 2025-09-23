@@ -62,7 +62,8 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
   
   // --- Timer Logic ---
   useEffect(() => {
-    let timerInterval: NodeJS.Timeout | null = null;
+    // FIX: Use ReturnType<typeof setInterval> for correct browser-based timer ID type.
+    let timerInterval: ReturnType<typeof setInterval> | null = null;
     if (!isLoading && !isDrillFinished && currentStep) {
         timerInterval = setInterval(() => {
             setElapsedTime(prevTime => prevTime + 1);

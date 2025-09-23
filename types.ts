@@ -1,3 +1,6 @@
+// FIX: Import React to provide the 'React' namespace for ComponentType.
+import React from 'react';
+
 export enum UserRole {
   Student = 'Student',
   Teacher = 'Teacher',
