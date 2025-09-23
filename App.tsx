@@ -28,6 +28,7 @@ type AuthInfo = {
   role?: UserRole;
   institution?: string;
   password?: string;
+  otpHint?: string;
 };
 
 const App: React.FC = () => {
@@ -105,16 +106,16 @@ const App: React.FC = () => {
     institution: string,
     password?: string
   }) => {
-    authService.sendOtp(details.email);
-    setAuthInfo({ flow: 'signup', ...details });
+    const otpHint = authService.sendOtp(details.email);
+    setAuthInfo({ flow: 'signup', ...details, otpHint });
     setCurrentView('verifyOtp');
   }, []);
 
   const handleStartForgotPassword = useCallback(async (email: string): Promise<boolean> => {
       const userExists = await authService.findUserByEmail(email);
       if (userExists) {
-          authService.sendOtp(email);
-          setAuthInfo({ flow: 'forgotPassword', email });
+          const otpHint = authService.sendOtp(email);
+          setAuthInfo({ flow: 'forgotPassword', email, otpHint });
           setCurrentView('verifyOtp');
           return true;
       }
@@ -229,7 +230,7 @@ const App: React.FC = () => {
               return <Login onLogin={handleLogin} setView={setCurrentView} />;
           case 'verifyOtp':
               if (authInfo) {
-                  return <VerifyOtp authInfo={authInfo} onVerified={handleOtpVerified} />;
+                  return <VerifyOtp authInfo={authInfo} onVerified={handleOtpVerified} otpHint={authInfo.otpHint} />;
               }
               return <Login onLogin={handleLogin} setView={setCurrentView} />;
           default:

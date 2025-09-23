@@ -10,12 +10,14 @@ type AuthInfo = {
 interface VerifyOtpProps {
   authInfo: AuthInfo;
   onVerified: (email: string) => void;
+  otpHint?: string;
 }
 
-const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified }) => {
+const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified, otpHint }) => {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
   const [error, setError] = useState<string>('');
   const [showHint, setShowHint] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -23,6 +25,17 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified }) => {
     inputsRef.current[0]?.focus();
   }, []);
   
+  useEffect(() => {
+    const checkIsMobile = () => {
+      // Use Tailwind's lg breakpoint as the threshold for mobile-like views
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
   // Hide the hint after a few seconds
   useEffect(() => {
     const timer = setTimeout(() => setShowHint(false), 8000);
@@ -99,17 +112,18 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified }) => {
               <p className="text-slate-600 dark:text-slate-400 mt-2">
                 {subTitle} <span className="font-semibold text-slate-800 dark:text-slate-200">{email}</span>.
               </p>
+               {showHint && (
+                <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+                    {isMobile && otpHint ? (
+                        `(For testing, your code is: ${otpHint})`
+                    ) : (
+                        `(Developer Hint: Check the browser console for the OTP)`
+                    )}
+                </p>
+              )}
             </div>
-            
-            {showHint && (
-                 <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center dark:bg-blue-900/20 dark:border-blue-500/30">
-                    <p className="text-sm text-blue-800 dark:text-blue-300">
-                        <span className="font-bold">Developer Hint:</span> Check the browser's developer console to find the simulated OTP code.
-                    </p>
-                </div>
-            )}
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="mt-6">
                 <div className="flex justify-center gap-2 mb-4">
                     {otp.map((data, index) => (
                         <input
@@ -131,7 +145,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified }) => {
 
                 <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105"
+                    className="w-full mt-6 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105"
                 >
                     {buttonText}
                 </button>

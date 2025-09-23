@@ -128,7 +128,7 @@ export const updatePassword = async (email: string, newPassword: string): Promis
 
 // --- OTP Simulation (sessionStorage + console.log) ---
 
-export const sendOtp = (email: string) => {
+export const sendOtp = (email: string): string => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const otpData = { email: email.toLowerCase(), otp, timestamp: Date.now() };
   
@@ -138,6 +138,8 @@ export const sendOtp = (email: string) => {
   // Simulate sending OTP by logging to console
   console.log(`%c[CrisisGuardian] OTP for ${email}: ${otp}`, 'color: #0ea5e9; font-weight: bold; font-size: 14px;');
   console.log('%cThis is a simulated OTP. In a real app, this would be sent via email or SMS.', 'color: #64748b;');
+  
+  return otp;
 };
 
 export const verifyOtp = (email: string, otp: string): boolean => {
