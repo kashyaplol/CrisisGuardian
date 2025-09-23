@@ -53,9 +53,10 @@ export interface DrillStep {
   scenario: string;
   question: string;
   options: DrillStepOption[];
+  aiAdvice: string;
 }
 
-export type View = 'welcome' | 'signup' | 'login' | 'verifyOtp' | 'home' | 'modules' | 'drills' | 'drill' | 'dashboard' | 'contacts' | 'profile' | 'registerInstitution';
+export type View = 'welcome' | 'signup' | 'login' | 'verifyOtp' | 'home' | 'modules' | 'drills' | 'drill' | 'dashboard' | 'contacts' | 'profile' | 'registerInstitution' | 'forgotPassword' | 'resetPassword';
 
 export type Theme = 'light' | 'dark';
 
@@ -63,4 +64,12 @@ export enum Difficulty {
   Easy = 'Easy',
   Medium = 'Medium',
   Hard = 'Hard',
+}
+
+export interface AnalyticsData {
+  totalDrillsCompleted: number;
+  overallScoreSum: number;
+  overallQuestionSum: number;
+  drillsByType: { [key in DisasterType]?: number };
+  scoresByType: { [key in DisasterType]?: { scoreSum: number; questionSum: number; count: number } };
 }

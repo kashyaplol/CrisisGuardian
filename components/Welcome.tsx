@@ -16,24 +16,7 @@ const Welcome: React.FC<WelcomeProps> = ({ setView }) => {
             style={{ backgroundImage: `url('https://images.unsplash.com/photo-1593941707882-6828203993b0?q=80&w=2574&auto=format&fit=crop')`, opacity: 0.15 }}
         ></div>
          <div className="z-10 text-center">
-            <CrisisGuardianLogo className="justify-center mb-6" />
-            <p className="text-slate-300 text-lg max-w-sm">
-                Empowering campuses with the knowledge to face disasters with confidence.
-            </p>
-            <div className="mt-12 space-y-6 text-left w-full max-w-xs mx-auto">
-                <div className="flex items-center gap-4">
-                    <BookOpenIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">In-Depth Study Modules</p>
-                </div>
-                <div className="flex items-center gap-4">
-                    <BoltIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">AI-Powered Virtual Drills</p>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <UsersIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">Campus-Wide Analytics</p>
-                </div>
-            </div>
+            <CrisisGuardianLogo className="justify-center" />
          </div>
       </div>
 
@@ -44,7 +27,7 @@ const Welcome: React.FC<WelcomeProps> = ({ setView }) => {
                 <CrisisGuardianLogo className="justify-center" />
             </div>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white leading-tight">
-                Build Resilience.<br/>Ensure Safety.
+                CrisisGuardian
             </h1>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 max-w-xs mx-auto">
                 Join CrisisGuardian today to start your preparedness training.

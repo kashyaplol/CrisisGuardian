@@ -3,10 +3,8 @@ import { CrisisGuardianLogo, BookOpenIcon, BoltIcon, UsersIcon } from './icons/I
 import * as authService from '../services/authService';
 
 type AuthInfo = {
-  flow: 'signup'; // Only signup uses OTP now
+  flow: 'signup' | 'forgotPassword';
   email: string;
-  name?: string;
-  role?: string;
 };
 
 interface VerifyOtpProps {
@@ -70,6 +68,13 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified }) => {
     }
   };
 
+  const { flow, email } = authInfo;
+  const title = flow === 'signup' ? 'Check Your Email' : 'Verify Your Identity';
+  const subTitle = flow === 'signup' 
+    ? `We've sent a 6-digit verification code to`
+    : `For your security, please enter the 6-digit code sent to`;
+  const buttonText = flow === 'signup' ? 'Verify & Sign Up' : 'Verify & Proceed';
+
   return (
     <div className="min-h-screen flex bg-white dark:bg-slate-900">
       {/* Left Branding Panel */}
@@ -79,24 +84,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified }) => {
             style={{ backgroundImage: `url('https://images.unsplash.com/photo-1593941707882-6828203993b0?q=80&w=2574&auto=format&fit=crop')`, opacity: 0.15 }}
         ></div>
          <div className="z-10 text-center">
-            <CrisisGuardianLogo className="justify-center mb-6" />
-            <p className="text-slate-300 text-lg max-w-sm">
-                Empowering campuses with the knowledge to face disasters with confidence.
-            </p>
-            <div className="mt-12 space-y-6 text-left w-full max-w-xs mx-auto">
-                <div className="flex items-center gap-4">
-                    <BookOpenIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">In-Depth Study Modules</p>
-                </div>
-                <div className="flex items-center gap-4">
-                    <BoltIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">AI-Powered Virtual Drills</p>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <UsersIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">Campus-Wide Analytics</p>
-                </div>
-            </div>
+            <CrisisGuardianLogo className="justify-center" />
          </div>
       </div>
 
@@ -107,9 +95,9 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified }) => {
                 <CrisisGuardianLogo className="justify-center" />
             </div>
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Check Your Email</h1>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{title}</h1>
               <p className="text-slate-600 dark:text-slate-400 mt-2">
-                We've sent a 6-digit verification code to <span className="font-semibold text-slate-800 dark:text-slate-200">{authInfo.email}</span>.
+                {subTitle} <span className="font-semibold text-slate-800 dark:text-slate-200">{email}</span>.
               </p>
             </div>
             
@@ -145,7 +133,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified }) => {
                     type="submit"
                     className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105"
                 >
-                    Verify & Sign Up
+                    {buttonText}
                 </button>
             </form>
         </div>

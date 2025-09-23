@@ -7,9 +7,34 @@ const SESSION_KEY = 'crisis_guardian_session';
 const OTP_KEY = 'crisis_guardian_otp';
 const INSTITUTIONS_DB_KEY = 'crisis_guardian_institutions';
 
-// Clear the user and session database on every application load to simulate a reset.
-localStorage.removeItem(USERS_DB_KEY);
-localStorage.removeItem(SESSION_KEY);
+const MOCK_API_LATENCY = 500; // ms
+
+// --- Helper function to simulate async operations ---
+const asyncLocalStorage = {
+  getItem: (key: string): Promise<string | null> => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(localStorage.getItem(key));
+      }, MOCK_API_LATENCY / 2); // Reads are faster
+    });
+  },
+  setItem: (key: string, value: string): Promise<void> => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        localStorage.setItem(key, value);
+        resolve();
+      }, MOCK_API_LATENCY);
+    });
+  },
+  removeItem: (key: string): Promise<void> => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+            localStorage.removeItem(key);
+            resolve();
+        }, MOCK_API_LATENCY);
+      });
+  }
+};
 
 // --- Institution Database Simulation ---
 
@@ -18,8 +43,8 @@ interface InstitutionsDB {
     colleges: string[];
 }
 
-export const getInstitutions = (): InstitutionsDB => {
-    const stored = localStorage.getItem(INSTITUTIONS_DB_KEY);
+export const getInstitutions = async (): Promise<InstitutionsDB> => {
+    const stored = await asyncLocalStorage.getItem(INSTITUTIONS_DB_KEY);
     if (stored) {
         return JSON.parse(stored);
     }
@@ -28,13 +53,13 @@ export const getInstitutions = (): InstitutionsDB => {
         schools: INDIAN_SCHOOLS,
         colleges: NIRF_COLLEGES,
     };
-    localStorage.setItem(INSTITUTIONS_DB_KEY, JSON.stringify(initialData));
+    await asyncLocalStorage.setItem(INSTITUTIONS_DB_KEY, JSON.stringify(initialData));
     return initialData;
 };
 
-export const addInstitution = (name: string, type: 'school' | 'college'): boolean => {
+export const addInstitution = async (name: string, type: 'school' | 'college'): Promise<boolean> => {
     if (!name.trim()) return false;
-    const db = getInstitutions();
+    const db = await getInstitutions();
     const list = type === 'school' ? db.schools : db.colleges;
     
     if (list.find(i => i.toLowerCase() === name.trim().toLowerCase())) {
@@ -42,46 +67,62 @@ export const addInstitution = (name: string, type: 'school' | 'college'): boolea
     }
 
     list.push(name.trim());
-    localStorage.setItem(INSTITUTIONS_DB_KEY, JSON.stringify(db));
+    await asyncLocalStorage.setItem(INSTITUTIONS_DB_KEY, JSON.stringify(db));
     return true;
 };
 
 // --- User Database Simulation (localStorage) ---
 
-const getUsers = (): Record<string, User> => {
-  const users = localStorage.getItem(USERS_DB_KEY);
-  return users ? JSON.parse(users) : {};
+const getUsers = async (): Promise<Record<string, User>> => {
+  const usersJson = await asyncLocalStorage.getItem(USERS_DB_KEY);
+  return usersJson ? JSON.parse(usersJson) : {};
 };
 
-const saveUsers = (users: Record<string, User>) => {
-  localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
+export const getAllUsers = async (): Promise<User[]> => {
+    const users = await getUsers();
+    return Object.values(users);
 };
 
-export const findUserByEmail = (email: string): User | null => {
-  const users = getUsers();
+const saveUsers = async (users: Record<string, User>) => {
+  await asyncLocalStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
+};
+
+export const findUserByEmail = async (email: string): Promise<User | null> => {
+  const users = await getUsers();
   return users[email.toLowerCase()] || null;
 };
 
-export const createUser = (user: User): boolean => {
-  const users = getUsers();
+export const createUser = async (user: User): Promise<boolean> => {
+  const users = await getUsers();
   const email = user.email.toLowerCase();
   if (users[email]) {
     // User already exists
     return false;
   }
-  // In a real app, NEVER store plain text passwords. This should be a securely hashed password.
-  users[email] = user;
-  saveUsers(users);
+  // Ensure the canonical user object also has the lowercase email.
+  users[email] = { ...user, email };
+  await saveUsers(users);
   return true;
 };
 
-export const loginUser = (email: string, password: string): User | null => {
-  const user = findUserByEmail(email);
+export const loginUser = async (email: string, password: string): Promise<User | null> => {
+  const user = await findUserByEmail(email);
   // In a real app, you would compare a hashed password, not plain text.
   if (user && user.password === password) {
     return user;
   }
   return null;
+};
+
+export const updatePassword = async (email: string, newPassword: string): Promise<boolean> => {
+  const users = await getUsers();
+  const lowerCaseEmail = email.toLowerCase();
+  if (users[lowerCaseEmail]) {
+    users[lowerCaseEmail].password = newPassword;
+    await saveUsers(users);
+    return true;
+  }
+  return false;
 };
 
 
@@ -118,17 +159,35 @@ export const verifyOtp = (email: string, otp: string): boolean => {
 };
 
 
-// --- Session Management ---
+// --- Session Management (localStorage) ---
 
-export const createSession = (user: User) => {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+export const createSession = async (user: User) => {
+  const users = await getUsers();
+  const email = user.email.toLowerCase();
+  // Ensure the canonical user object being saved to both DB and session has the lowercase email.
+  const canonicalUser = { ...user, email };
+  
+  users[email] = canonicalUser;
+  await saveUsers(users);
+  
+  await asyncLocalStorage.setItem(SESSION_KEY, JSON.stringify(canonicalUser));
 };
 
-export const checkSession = (): User | null => {
-  const sessionUser = localStorage.getItem(SESSION_KEY);
-  return sessionUser ? JSON.parse(sessionUser) : null;
+export const checkSession = async (): Promise<User | null> => {
+  const sessionJson = await asyncLocalStorage.getItem(SESSION_KEY);
+  if (!sessionJson) return null;
+  
+  try {
+      const user = JSON.parse(sessionJson) as User;
+      // Re-fetch from the main user DB to ensure data is consistent and fresh
+      return await findUserByEmail(user.email);
+  } catch (e) {
+      // If parsing fails, the session is invalid.
+      await clearSession();
+      return null;
+  }
 };
 
-export const clearSession = () => {
-  localStorage.removeItem(SESSION_KEY);
+export const clearSession = async () => {
+  await asyncLocalStorage.removeItem(SESSION_KEY);
 };

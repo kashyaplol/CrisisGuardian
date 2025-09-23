@@ -5,7 +5,7 @@ import { DEFAULT_AVATARS, DISASTER_MODULES } from '../constants';
 
 interface ProfileProps {
   user: User;
-  setUser: (user: User) => void;
+  setUser: (user: User) => Promise<void>;
   setView: (view: View) => void;
 }
 
@@ -246,15 +246,15 @@ const Profile: React.FC<ProfileProps> = ({ user, setUser, setView }) => {
   const [name, setName] = useState(user.name);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (name.trim()) {
-      setUser({ ...user, name: name.trim() });
+      await setUser({ ...user, name: name.trim() });
       setIsEditing(false);
     }
   };
 
-  const handleAvatarUpdate = (newAvatar: string) => {
-    setUser({ ...user, avatar: newAvatar });
+  const handleAvatarUpdate = async (newAvatar: string) => {
+    await setUser({ ...user, avatar: newAvatar });
     setIsModalOpen(false);
   };
 

@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { DisasterType, DrillStep, DrillStepOption } from '../types';
 
@@ -41,8 +42,12 @@ const responseSchema = {
         required: ["text", "isCorrect", "feedback"],
       },
     },
+    aiAdvice: {
+        type: Type.STRING,
+        description: "A short, concise, and actionable hint for the user if they are stuck on the question. It should guide them toward the correct answer without giving it away directly."
+    }
   },
-  required: ["scenario", "question", "options"],
+  required: ["scenario", "question", "options", "aiAdvice"],
 };
 
 interface PreviousStepContext {
@@ -61,9 +66,9 @@ export const generateDrillScenario = async (disasterType: DisasterType, region: 
     The previous situation was: "${scenario}".
     The question asked was: "${question}".
     The user chose the action: "${userAnswer.text}", which was ${userAnswer.isCorrect ? 'correct' : 'incorrect'}. The feedback provided was: "${userAnswer.feedback}".
-    Now, generate a new, logical follow-up scenario that results from the user's previous action. Create a new multiple-choice question with three distinct options (one correct, two plausible but incorrect) about the immediate correct action in this new situation. Provide brief feedback for each option. Ensure the new scenario is a clear progression of the story.`;
+    Now, generate a new, logical follow-up scenario that results from the user's previous action. Create a new multiple-choice question with three distinct options (one correct, two plausible but incorrect) about the immediate correct action in this new situation. Provide brief feedback for each option. Also, provide a short, concise hint related to this new scenario that helps the user determine the correct next step. Ensure the new scenario is a clear progression of the story.`;
   } else {
-    prompt = `Generate a realistic, initial stage disaster scenario for a ${disasterType} in a school located in ${region}, India. The scenario should be focused on a student's perspective. Create one multiple-choice question with three options about the immediate correct action. One option must be correct, and the other two must be plausible but incorrect. Provide brief feedback for each option.`;
+    prompt = `Generate a realistic, initial stage disaster scenario for a ${disasterType} in a school located in ${region}, India. The scenario should be focused on a student's perspective. Create one multiple-choice question with three options about the immediate correct action. One option must be correct, and the other two must be plausible but incorrect. Provide brief feedback for each option. Also, provide a short, concise hint to guide the user toward the correct action if they are stuck.`;
   }
 
   try {
@@ -81,7 +86,7 @@ export const generateDrillScenario = async (disasterType: DisasterType, region: 
     const parsedJson = JSON.parse(jsonText);
 
     // Basic validation to ensure the structure matches DrillStep
-    if (parsedJson.scenario && parsedJson.question && Array.isArray(parsedJson.options) && parsedJson.options.length === 3) {
+    if (parsedJson.scenario && parsedJson.question && parsedJson.aiAdvice && Array.isArray(parsedJson.options) && parsedJson.options.length === 3) {
       // Deeper validation for options
       const allOptionsValid = parsedJson.options.every((opt: any) => 
         typeof opt.text === 'string' &&

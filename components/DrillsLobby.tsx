@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DisasterType, Difficulty } from '../types';
 import { DISASTER_MODULES } from '../constants';
-import { XCircleIcon, TrophyIcon } from './icons/Icons';
+import { XCircleIcon, TrophyIcon, BoltIcon } from './icons/Icons';
 
 interface DrillsLobbyProps {
   onStartDrill: (disasterType: DisasterType, difficulty: Difficulty) => void;
@@ -58,8 +58,8 @@ const DrillsLobby: React.FC<DrillsLobbyProps> = ({ onStartDrill }) => {
   return (
     <div>
       <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl dark:text-slate-100">Virtual Drills</h1>
-        <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">Choose a scenario to test your decision-making skills in a simulated emergency.</p>
+        <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl dark:text-slate-100">Virtual Drills Lobby</h1>
+        <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">Test your knowledge in a simulated environment. Choose a scenario to begin.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {DISASTER_MODULES.map((module) => (
@@ -72,8 +72,9 @@ const DrillsLobby: React.FC<DrillsLobbyProps> = ({ onStartDrill }) => {
               <p className="text-slate-600 dark:text-slate-400 text-sm flex-grow mb-4">{module.description}</p>
               <button
                 onClick={() => handleOpenModal(module.type)}
-                className="mt-auto w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300"
+                className="mt-auto w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center justify-center gap-2"
               >
+                <BoltIcon className="h-5 w-5" />
                 Start Virtual Drill
               </button>
             </div>
@@ -83,25 +84,51 @@ const DrillsLobby: React.FC<DrillsLobbyProps> = ({ onStartDrill }) => {
 
       {modalState.isOpen && modalState.disasterType && (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog">
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-lg p-6 relative animate-fade-in-up">
-                <div className="flex items-start justify-between">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col animate-fade-in-up">
+                <div className="p-6 border-b dark:border-slate-700 flex justify-between items-start">
                     <div>
-                        <h3 className="text-xl font-semibold mb-1 dark:text-slate-100">Drill Difficulty</h3>
-                        <p className="text-slate-600 dark:text-slate-400">Select a challenge level for the {modalState.disasterType} drill.</p>
+                        <h3 className="text-2xl font-bold dark:text-slate-100">Select Difficulty</h3>
+                        <p className="text-slate-600 dark:text-slate-400">Scenario: {modalState.disasterType}</p>
                     </div>
-                     <button onClick={handleCloseModal} className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
+                    <button onClick={handleCloseModal} className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
                         <XCircleIcon className="h-7 w-7" />
                     </button>
                 </div>
                 
-                <div className="my-6 space-y-4 sm:space-y-0 sm:flex sm:gap-4">
-                    <DifficultyCard difficulty={Difficulty.Easy} description="1 Question" selected={selectedDifficulty === Difficulty.Easy} onSelect={() => setSelectedDifficulty(Difficulty.Easy)} />
-                    <DifficultyCard difficulty={Difficulty.Medium} description="2 Questions" selected={selectedDifficulty === Difficulty.Medium} onSelect={() => setSelectedDifficulty(Difficulty.Medium)} />
-                    <DifficultyCard difficulty={Difficulty.Hard} description="3 Questions" selected={selectedDifficulty === Difficulty.Hard} onSelect={() => setSelectedDifficulty(Difficulty.Hard)} />
+                <div className="p-6 overflow-y-auto space-y-6">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-500/30">
+                        <div className="flex items-start">
+                            <TrophyIcon className="h-6 w-6 text-blue-700 dark:text-blue-300 mr-3 mt-1 flex-shrink-0" />
+                            <div>
+                                <h4 className="font-semibold text-blue-800 dark:text-blue-200">Challenge Level</h4>
+                                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">A higher difficulty means more steps and complex follow-up scenarios.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <DifficultyCard 
+                            difficulty={Difficulty.Easy} 
+                            description="1 Step Scenario" 
+                            selected={selectedDifficulty === Difficulty.Easy} 
+                            onSelect={() => setSelectedDifficulty(Difficulty.Easy)} 
+                        />
+                        <DifficultyCard 
+                            difficulty={Difficulty.Medium} 
+                            description="2 Step Scenario" 
+                            selected={selectedDifficulty === Difficulty.Medium} 
+                            onSelect={() => setSelectedDifficulty(Difficulty.Medium)} 
+                        />
+                        <DifficultyCard 
+                            difficulty={Difficulty.Hard} 
+                            description="3 Step Scenario" 
+                            selected={selectedDifficulty === Difficulty.Hard} 
+                            onSelect={() => setSelectedDifficulty(Difficulty.Hard)} 
+                        />
+                    </div>
                 </div>
                 
-                <div className="flex justify-end gap-4">
-                    <button 
+                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-t dark:border-slate-700 flex justify-end gap-4">
+                     <button 
                         onClick={handleCloseModal}
                         className="px-6 py-2 rounded-lg bg-slate-200 text-slate-800 font-semibold hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500 transition-colors"
                     >
@@ -109,9 +136,8 @@ const DrillsLobby: React.FC<DrillsLobbyProps> = ({ onStartDrill }) => {
                     </button>
                     <button 
                         onClick={handleStart}
-                        className="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                        className="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors"
                     >
-                        <TrophyIcon className="h-5 w-5" />
                         Start Drill
                     </button>
                 </div>

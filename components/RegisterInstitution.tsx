@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View } from '../types';
 import * as authService from '../services/authService';
-import { CheckCircleIcon, XCircleIcon, AcademicCapIcon } from './icons/Icons';
+import { CheckCircleIcon, XCircleIcon, AcademicCapIcon, ArrowPathIcon } from './icons/Icons';
 
 interface RegisterInstitutionProps {
     setView: (view: View) => void;
@@ -11,8 +11,9 @@ const RegisterInstitution: React.FC<RegisterInstitutionProps> = ({ setView }) =>
     const [name, setName] = useState('');
     const [type, setType] = useState<'school' | 'college'>('school');
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage(null);
         if (!name.trim()) {
@@ -20,7 +21,9 @@ const RegisterInstitution: React.FC<RegisterInstitutionProps> = ({ setView }) =>
             return;
         }
 
-        const success = authService.addInstitution(name, type);
+        setIsLoading(true);
+        const success = await authService.addInstitution(name, type);
+        setIsLoading(false);
 
         if (success) {
             setMessage({ type: 'success', text: `Successfully registered ${name}!` });
@@ -100,8 +103,19 @@ const RegisterInstitution: React.FC<RegisterInstitutionProps> = ({ setView }) =>
                         <button type="button" onClick={() => setView('dashboard')} className="px-6 py-2 rounded-lg bg-slate-200 text-slate-800 font-semibold hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500 transition-colors">
                             Back to Dashboard
                         </button>
-                        <button type="submit" className="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2">
-                            Register Institution
+                        <button 
+                            type="submit" 
+                            disabled={isLoading}
+                            className="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:bg-slate-400 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <ArrowPathIcon className="animate-spin h-5 w-5" />
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                'Register Institution'
+                            )}
                         </button>
                     </div>
                 </form>

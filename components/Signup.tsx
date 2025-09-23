@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { UserRole, View } from '../types';
-import { CrisisGuardianLogo, AcademicCapIcon, BriefcaseIcon, ShieldCheckIcon, UserCircleIcon, EnvelopeIcon, LockClosedIcon, ArrowPathIcon, BookOpenIcon, BoltIcon, UsersIcon } from './icons/Icons';
+import { CrisisGuardianLogo, AcademicCapIcon, BriefcaseIcon, ShieldCheckIcon, UserCircleIcon, EnvelopeIcon, LockClosedIcon, ArrowPathIcon, EyeIcon, EyeSlashIcon } from './icons/Icons';
 import * as authService from '../services/authService';
 
 interface SignupProps {
@@ -43,6 +43,8 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.Student);
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
 
   const [institutionType, setInstitutionType] = useState<'school' | 'college' | null>(null);
   const [allInstitutions, setAllInstitutions] = useState<{schools: string[], colleges: string[]}>({ schools: [], colleges: [] });
@@ -53,7 +55,11 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setAllInstitutions(authService.getInstitutions());
+    const fetchInstitutions = async () => {
+        const institutions = await authService.getInstitutions();
+        setAllInstitutions(institutions);
+    };
+    fetchInstitutions();
   }, []);
 
   useEffect(() => {
@@ -120,13 +126,12 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
       return;
     }
 
-    if (authService.findUserByEmail(email)) {
+    const existingUser = await authService.findUserByEmail(email);
+    if (existingUser) {
         setError('An account with this email already exists.');
         setIsLoading(false);
         return;
     }
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
     onStartSignup({
       name,
@@ -145,24 +150,7 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
             style={{ backgroundImage: `url('https://images.unsplash.com/photo-1593941707882-6828203993b0?q=80&w=2574&auto=format&fit=crop')`, opacity: 0.15 }}
         ></div>
          <div className="z-10 text-center">
-            <CrisisGuardianLogo className="justify-center mb-6" />
-            <p className="text-slate-300 text-lg max-w-sm">
-                Empowering campuses with the knowledge to face disasters with confidence.
-            </p>
-            <div className="mt-12 space-y-6 text-left w-full max-w-xs mx-auto">
-                <div className="flex items-center gap-4">
-                    <BookOpenIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">In-Depth Study Modules</p>
-                </div>
-                <div className="flex items-center gap-4">
-                    <BoltIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">AI-Powered Virtual Drills</p>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <UsersIcon className="h-7 w-7 text-blue-400 flex-shrink-0" />
-                    <p className="font-semibold text-slate-200">Campus-Wide Analytics</p>
-                </div>
-            </div>
+            <CrisisGuardianLogo className="justify-center" />
          </div>
       </div>
 
@@ -172,7 +160,7 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                 <CrisisGuardianLogo className="justify-center" />
             </div>
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Create an Account</h2>
+              <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">CrisisGuardian</h2>
               <p className="text-slate-600 dark:text-slate-400 mt-2">Join the mission to build a safer tomorrow.</p>
             </div>
             
@@ -248,14 +236,20 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
                     <div className="relative">
                         <LockClosedIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-3" />
-                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600" />
+                        <input type={isPasswordVisible ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600" />
+                         <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                            {isPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                        </button>
                     </div>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm Password</label>
                     <div className="relative">
                         <LockClosedIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-3" />
-                        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600" />
+                        <input type={isConfirmPasswordVisible ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" required className="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600" />
+                        <button type="button" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                            {isConfirmPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                        </button>
                     </div>
                 </div>
 

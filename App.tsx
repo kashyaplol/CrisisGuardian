@@ -13,18 +13,21 @@ import VerifyOtp from './components/VerifyOtp';
 import Welcome from './components/Welcome';
 import Profile from './components/Profile';
 import RegisterInstitution from './components/RegisterInstitution';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import { DEFAULT_AVATARS } from './constants';
 import * as authService from './services/authService';
+import * as analyticsService from './services/analyticsService';
 
 // Define a type for the temporary authentication information
 type AuthInfo = {
-  flow: 'signup'; // Login flow no longer needs temporary state
+  flow: 'signup' | 'forgotPassword';
   email: string;
-  name: string;
+  name?: string;
   phone?: string;
-  role: UserRole;
-  institution: string;
-  password?: string; // Storing password temporarily during OTP verification
+  role?: UserRole;
+  institution?: string;
+  password?: string;
 };
 
 const App: React.FC = () => {
@@ -32,20 +35,31 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authInfo, setAuthInfo] = useState<AuthInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [selectedDisaster, setSelectedDisaster] = useState<DisasterType | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [selectedRegion, setSelectedRegion] = useState<string>('Delhi');
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'light');
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('theme')) {
+        return localStorage.getItem('theme') as Theme;
+    }
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+  });
 
   useEffect(() => {
-    // Check for a logged-in user in localStorage on initial load
-    const loggedInUser = authService.checkSession();
-    if (loggedInUser) {
-      setCurrentUser(loggedInUser);
-      setCurrentView('home');
-    }
-    setIsLoading(false);
+    const checkUserSession = async () => {
+        const loggedInUser = await authService.checkSession();
+        if (loggedInUser) {
+            setCurrentUser(loggedInUser);
+            setCurrentView('home');
+        }
+        setIsLoading(false);
+    };
+    checkUserSession();
   }, []);
 
   useEffect(() => {
@@ -57,14 +71,25 @@ const App: React.FC = () => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    if (isSidebarOpen) {
+        document.body.classList.add('no-scroll');
+    } else {
+        document.body.classList.remove('no-scroll');
+    }
+    return () => {
+        document.body.classList.remove('no-scroll');
+    };
+  }, [isSidebarOpen]);
+
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
   
-  const handleLogin = useCallback((email: string, password: string): boolean => {
-    const user = authService.loginUser(email, password);
+  const handleLogin = useCallback(async (email: string, password: string): Promise<boolean> => {
+    const user = await authService.loginUser(email, password);
     if (user) {
-      authService.createSession(user);
+      await authService.createSession(user);
       setCurrentUser(user);
       setCurrentView('home');
       return true;
@@ -85,7 +110,26 @@ const App: React.FC = () => {
     setCurrentView('verifyOtp');
   }, []);
 
-  const handleOtpVerified = useCallback((email: string) => {
+  const handleStartForgotPassword = useCallback(async (email: string): Promise<boolean> => {
+      const userExists = await authService.findUserByEmail(email);
+      if (userExists) {
+          authService.sendOtp(email);
+          setAuthInfo({ flow: 'forgotPassword', email });
+          setCurrentView('verifyOtp');
+          return true;
+      }
+      return false; // User does not exist, but we won't reveal this to the user for security.
+  }, []);
+
+  const handleResetPassword = useCallback(async (password: string): Promise<void> => {
+      if (authInfo?.flow === 'forgotPassword') {
+          await authService.updatePassword(authInfo.email, password);
+          setAuthInfo(null);
+          setCurrentView('login');
+      }
+  }, [authInfo]);
+
+  const handleOtpVerified = useCallback(async (email: string) => {
     const { flow } = authInfo || {};
 
     if (flow === 'signup') {
@@ -102,24 +146,27 @@ const App: React.FC = () => {
                 avatar: DEFAULT_AVATARS[0].id,
                 drillHistory: [],
             };
-            authService.createUser(newUser);
-            authService.createSession(newUser);
+            await authService.createUser(newUser);
+            await authService.createSession(newUser);
             setCurrentUser(newUser);
             setCurrentView('home');
+            setAuthInfo(null); // Clear after use
         } else {
-            // Incomplete signup data, send back.
-            setCurrentView('signup');
+            setCurrentView('signup'); // Incomplete signup data
+            setAuthInfo(null);
         }
+    } else if (flow === 'forgotPassword') {
+        // OTP is verified, now let user reset the password.
+        // Don't clear authInfo yet, we need the email for the next step.
+        setCurrentView('resetPassword');
     } else {
-        // Fallback if flow is not set.
         setCurrentView('welcome');
+        setAuthInfo(null);
     }
-    
-    setAuthInfo(null);
   }, [authInfo]);
 
-  const handleLogout = useCallback(() => {
-    authService.clearSession();
+  const handleLogout = useCallback(async () => {
+    await authService.clearSession();
     setCurrentUser(null);
     setCurrentView('welcome');
   }, []);
@@ -130,7 +177,7 @@ const App: React.FC = () => {
     setCurrentView('drill');
   }, []);
 
-  const handleDrillComplete = useCallback((result: {
+  const handleDrillComplete = useCallback(async (result: {
     disasterType: DisasterType;
     difficulty: Difficulty;
     score: number;
@@ -160,7 +207,9 @@ const App: React.FC = () => {
     };
 
     setCurrentUser(updatedUser);
-    authService.createSession(updatedUser);
+    await authService.createSession(updatedUser);
+    // Update dashboard analytics
+    await analyticsService.updateAnalyticsOnDrillComplete(newDrillEntry);
   }, [currentUser]);
 
   const renderAuthView = () => {
@@ -171,11 +220,17 @@ const App: React.FC = () => {
               return <Login onLogin={handleLogin} setView={setCurrentView} />;
           case 'signup':
               return <Signup onStartSignup={handleStartSignup} setView={setCurrentView} />;
+          case 'forgotPassword':
+              return <ForgotPassword onStartForgotPassword={handleStartForgotPassword} setView={setCurrentView} />;
+          case 'resetPassword':
+              if (authInfo?.flow === 'forgotPassword') {
+                  return <ResetPassword onResetPassword={handleResetPassword} />;
+              }
+              return <Login onLogin={handleLogin} setView={setCurrentView} />;
           case 'verifyOtp':
               if (authInfo) {
                   return <VerifyOtp authInfo={authInfo} onVerified={handleOtpVerified} />;
               }
-              // Fallback if authInfo is missing
               return <Login onLogin={handleLogin} setView={setCurrentView} />;
           default:
               return <Welcome setView={setCurrentView} />;
@@ -205,9 +260,9 @@ const App: React.FC = () => {
       case 'contacts':
         return <EmergencyContacts />;
       case 'profile':
-        return <Profile user={currentUser} setUser={(updatedUser) => {
+        return <Profile user={currentUser} setUser={async (updatedUser) => {
             setCurrentUser(updatedUser);
-            authService.createSession(updatedUser); // Update session storage
+            await authService.createSession(updatedUser); // Update session storage
         }} setView={setCurrentView} />;
       case 'registerInstitution':
           if (currentUser.role === UserRole.Admin) {
@@ -242,6 +297,8 @@ const App: React.FC = () => {
           onLogout={handleLogout}
           theme={theme}
           toggleTheme={toggleTheme}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
         />
       <main key={currentView} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 view-container-animation">
         {renderAppView()}
