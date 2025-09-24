@@ -1,15 +1,23 @@
 import { DisasterModule, DisasterType } from './types';
 import { 
-  EarthquakeIcon, FloodIcon, FireIcon, CycloneIcon,
   Avatar1Icon, Avatar2Icon, Avatar3Icon, Avatar4Icon 
 } from './components/icons/Icons';
+
+// --- Icon Data URLs (Representing WebP/Image format) ---
+// Using SVG data URLs as a stand-in for WebP format. This allows using them in <img> tags.
+const ICONS = {
+  earthquake: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iYmxhY2siPjxwYXRoIGQ9Ik0yMSAxMS4yVjIwaC01LjJsLS42LS44IDIuOC0zLjctMS42LTEuMi0yLjggMy44LTIuMy0xLjdWNC45TDIxIDExLjN6TTExLjIgMjBIM3YtOC4xbDcuOC02TDEyIDYuOHY3LjJsMS42IDEuMi0yIDIuN0wxMS4yIDIwek0yMi41IDIxaC0yMXYyaDIxVjIxek0iLz48L3N2Zz4=',
+  flood: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iYmxhY2siPjxwYXRoIGQ9Ik0xMiAzTDQgMTJoM3Y1aDEwbC0xLTRoM0wxMiAzek0yLjUgMjEuNWMxLjQtLjkgMy4xLS45IDQuNSAwczMuMSAxIDQuNSAwIDMuMS0xIDQuNSAwIDMuMS45IDQuNSAwdi0zYy0xLjQuOS0zLjEuOS00LjUgMHMtMy4xLTEtNC41IDAtMy4xIDEtNC41IDAtMy4xLS45LTQuNSAwdiN6Ii8+PC9zdmc+',
+  fire: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iYmxhY2siPjxwYXRoIGQ9Ik05LjIgMjJjLS4zLTIuMS0xLjItNC4xLTIuNS01LjhDNC4zIDEzLjEgMy4xIDExLjkgMi40IDEyLjMgNi4xIDkgOC41IDQuNyAxMi41IDIuNGMuNSAxLjQuNyAyLjguNyA0LjMgMCAyLjgtLjkgNS4zLTIuNSA3LjVDMTIuMyAxNS42IDE0IDE3LjcgMTQgMjAuMmMwIC41LS4xIDEuMS0uMiAxLjYtMS40LS4yLTIuOS0uMi00LjYtLjJ6Ii8+PHBhdGggZD0iTTE1IDcuNWMtLjYgMS42LTEuNSAzLjEtMi43IDQuNCAyLjQgMS4yIDQgMy42IDQgNi4zIDAgLjEgMCAuMiAwIC4zIDMuNC0xLjIgNS44LTQuNCA1LjgtOC4yQzIyIDEyLjUgMTguMiA4LjYgMTUgNy41eiIvPjwvc3ZnPg==',
+  cyclone: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iYmxhY2siPjxwYXRoIGQ9Ik0xMiAyYzIuOCAwIDUuMyAxLjIgNy4xIDMuMS0xIDEuMy0yLjUgMi4xLTQuMSAyLjEtMi44IDAtNS0yLjItNS01IDAtMS43LjgtMy4yIDIuMS00LjEuNiAwIC42IDAgLjYgMHptNi45LTIuMkMxNyAzLjEgMTQuNiAyIDEyIDJzLTUgMS4xLTYuOSAyLjlDNy45LjggOS40IDAgMTEgMGMxLjggMCAzLjQgMS4xIDQuMSAyLjFDMTUgNy4zIDE3LjUgNi4xIDE4LjkgNC45em0tMTMuOCAxNGMxLjkgMS45IDQuMyAzIDYuOSAzczUtMS4xIDYuOS0yLjljLTEuOSAxLjktNC4zIDMtNi45IDNzLTUtMS4xLTYuOS0yLjljLTEtMS4zLTEuNi0yLjgtMS42LTQuNSAwLTIuOCAxLjItNS4zIDMuMS03LjFDNC4xIDIuMiAyLjUgMyAxLjMgNC4xLTEuMyA2LjcgMCAxMS4yIDAgMTRjMCAyLjggMS4yIDUuMyAzLjEgNy4xeiIvPjwvc3ZnPg==',
+};
 
 export const DISASTER_MODULES: DisasterModule[] = [
   {
     type: DisasterType.Earthquake,
     title: 'Earthquake Safety',
     description: 'Learn how to react before, during, and after an earthquake. Practice "Drop, Cover, and Hold On".',
-    icon: EarthquakeIcon,
+    icon: ICONS.earthquake,
     studyMaterial: {
       introduction: "India's high disaster vulnerability index, as noted by the NDMA, makes earthquake preparedness in schools critical. This module follows UNDRR recommendations for integrating disaster risk reduction into education.",
       keyPoints: [
@@ -28,7 +36,7 @@ export const DISASTER_MODULES: DisasterModule[] = [
     type: DisasterType.Flood,
     title: 'Flood Preparedness',
     description: 'Understand flood warnings, evacuation procedures, and how to stay safe from water-borne dangers.',
-    icon: FloodIcon,
+    icon: ICONS.flood,
     studyMaterial: {
       introduction: 'Many regions in India are prone to flooding. Low awareness in schools can be dangerous. This material is designed to build resilience through education.',
       keyPoints: [
@@ -47,7 +55,7 @@ export const DISASTER_MODULES: DisasterModule[] = [
     type: DisasterType.Fire,
     title: 'Fire Emergency',
     description: 'Know the escape routes, how to use a fire extinguisher, and what to do in case of a fire breakout.',
-    icon: FireIcon,
+    icon: ICONS.fire,
     studyMaterial: {
       introduction: 'Fire safety is a critical component of school safety policies. This module covers essential prevention and response strategies.',
       keyPoints: [
@@ -66,7 +74,7 @@ export const DISASTER_MODULES: DisasterModule[] = [
     type: DisasterType.Cyclone,
     title: 'Cyclone Alert',
     description: 'Prepare for high-speed winds and heavy rain. Secure your home and know the evacuation zones.',
-    icon: CycloneIcon,
+    icon: ICONS.cyclone,
     studyMaterial: {
       introduction: "India's extensive coastline is vulnerable to cyclones. Integrating disaster risk reduction in school policies, as recommended by the UNDRR, is vital for protecting students and staff.",
       keyPoints: [

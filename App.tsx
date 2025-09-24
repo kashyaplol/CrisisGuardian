@@ -42,16 +42,7 @@ const App: React.FC = () => {
   const [selectedDisaster, setSelectedDisaster] = useState<DisasterType | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [selectedRegion, setSelectedRegion] = useState<string>('Delhi');
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('theme')) {
-        return localStorage.getItem('theme') as Theme;
-    }
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
-    }
-    return 'light';
-  });
-
+  
   useEffect(() => {
     const initializeApp = async () => {
         await authService.seedInitialUsers();
@@ -66,15 +57,6 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
     if (isSidebarOpen) {
         document.body.classList.add('no-scroll');
     } else {
@@ -85,10 +67,6 @@ const App: React.FC = () => {
     };
   }, [isSidebarOpen]);
 
-  const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
-  
   const handleLogin = useCallback(async (email: string, password: string): Promise<boolean> => {
     const user = await authService.loginUser(email, password);
     if (user) {
@@ -259,16 +237,23 @@ const App: React.FC = () => {
         return <Home setView={setCurrentView} user={currentUser} />; // Fallback
       case 'dashboard':
         if (currentUser.role === UserRole.Admin) {
-          return <AdminDashboard theme={theme} setView={setCurrentView} />;
+          return <AdminDashboard setView={setCurrentView} />;
         }
         return <Home setView={setCurrentView} user={currentUser} />; // Fallback
       case 'contacts':
         return <EmergencyContacts />;
       case 'profile':
-        return <Profile user={currentUser} setUser={async (updatedUser) => {
-            setCurrentUser(updatedUser);
-            await authService.createSession(updatedUser); // Update session storage
-        }} setView={setCurrentView} />;
+        return <Profile 
+            user={currentUser} 
+            setUser={async (updatedUser) => {
+                setCurrentUser(updatedUser);
+                await authService.createSession(updatedUser); // Update session storage
+            }} 
+            setView={setCurrentView} 
+            onLogout={handleLogout}
+            region={selectedRegion}
+            setRegion={setSelectedRegion}
+        />;
       case 'registerInstitution':
           if (currentUser.role === UserRole.Admin) {
               return <RegisterInstitution setView={setCurrentView} />;
@@ -280,7 +265,7 @@ const App: React.FC = () => {
   };
   
   if (isLoading) {
-    return <div className="min-h-screen bg-slate-50 dark:bg-slate-900" />; // Or a loading spinner
+    return <div className="min-h-screen" />; // Or a loading spinner
   }
 
   if (!currentUser) {
@@ -292,24 +277,19 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200">
+    <div className="min-h-screen">
        <Header 
           currentView={currentView} 
           setView={setCurrentView} 
-          region={selectedRegion} 
-          setRegion={setSelectedRegion} 
           user={currentUser}
-          onLogout={handleLogout}
-          theme={theme}
-          toggleTheme={toggleTheme}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
-      <main key={currentView} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 view-container-animation">
+      <main key={currentView} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 view-container-animation">
         {renderAppView()}
       </main>
-      <footer className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
-          <p>&copy; {new Date().getFullYear()} CrisisGuardian. Building a safer India.</p>
+      <footer className="text-center py-8 text-sm text-[--brand-slate] dark:text-slate-400">
+          <p>&copy; {new Date().getFullYear()} CrisisGuardian. Secure. Smart. Prepared.</p>
       </footer>
     </div>
   );

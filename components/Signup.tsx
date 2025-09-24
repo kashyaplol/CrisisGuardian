@@ -24,14 +24,14 @@ const RoleCard: React.FC<{
   <button
     type="button"
     onClick={() => onSelect(role)}
-    className={`w-full p-4 text-center border-2 rounded-lg transition-all duration-300 ${
+    className={`w-full p-4 text-center border-2 rounded-2xl transition-all duration-300 flex flex-col items-center justify-center h-full ${
       selectedRole === role
-        ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-500 dark:bg-blue-900/50 dark:border-blue-500'
-        : 'bg-white border-slate-300 hover:border-blue-400 dark:bg-slate-700 dark:border-slate-600 dark:hover:border-blue-500'
+        ? 'bg-orange-500/10 border-[--brand-orange] ring-2 ring-[--brand-orange] dark:bg-orange-500/20'
+        : 'bg-black/5 border-transparent hover:border-black/10 dark:bg-white/10 dark:hover:border-white/20'
     }`}
   >
-    <Icon className={`h-10 w-10 mx-auto mb-2 ${selectedRole === role ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`} />
-    <span className="font-semibold text-sm text-slate-700 dark:text-slate-300">{role}</span>
+    <Icon className={`h-10 w-10 mx-auto mb-2 ${selectedRole === role ? 'text-[--brand-orange]' : 'text-[--brand-slate] dark:text-slate-400'}`} />
+    <span className="font-semibold text-sm text-[--brand-charcoal] dark:text-slate-300">{role}</span>
   </button>
 );
 
@@ -143,30 +143,20 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
   };
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-slate-900">
-      <div className="hidden lg:flex w-1/2 flex-col items-center justify-center bg-slate-900 text-white p-12 relative overflow-hidden animate-fade-in-slow">
-         <div 
-            className="absolute top-0 left-0 w-full h-full bg-cover bg-center"
-            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1593941707882-6828203993b0?q=80&w=2574&auto=format&fit=crop')`, opacity: 0.15 }}
-        ></div>
-         <div className="z-10 text-center">
-            <CrisisGuardianLogo className="justify-center" />
-         </div>
-      </div>
-
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md animate-slide-in-from-right">
-             <div className="text-center lg:hidden mb-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-beige] dark:bg-[--dark-bg] p-6">
+      <div className="w-full max-w-md">
+           <div className="text-center mb-10">
                 <CrisisGuardianLogo className="justify-center" />
             </div>
+          <div className="bg-white dark:bg-[--dark-surface] p-8 rounded-3xl soft-shadow">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">CrisisGuardian</h2>
-              <p className="text-slate-600 dark:text-slate-400 mt-2">Join the mission to build a safer tomorrow.</p>
+              <h2 className="text-3xl font-bold text-[--brand-charcoal] dark:text-white">Create Your Account</h2>
+              <p className="text-[--brand-slate] dark:text-slate-400 mt-2">Join the mission to build a safer tomorrow.</p>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
                 <fieldset>
-                    <legend className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">I am a...</legend>
+                    <legend className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">I am a...</legend>
                     <div className="grid grid-cols-3 gap-4">
                         <RoleCard role={UserRole.Student} icon={AcademicCapIcon} selectedRole={selectedRole} onSelect={setSelectedRole} />
                         <RoleCard role={UserRole.Teacher} icon={BriefcaseIcon} selectedRole={selectedRole} onSelect={setSelectedRole} />
@@ -175,16 +165,16 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                 </fieldset>
 
                 <fieldset>
-                    <legend className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">My institution is a...</legend>
+                    <legend className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">My institution is a...</legend>
                     <div className="flex gap-4">
-                        <button type="button" onClick={() => setInstitutionType('school')} className={`w-full py-2 px-4 rounded-lg border-2 transition ${institutionType === 'school' ? 'bg-blue-100 border-blue-500 dark:bg-blue-900/50 dark:border-blue-500' : 'bg-white border-slate-300 hover:border-blue-400 dark:bg-slate-700 dark:border-slate-600'}`}>School</button>
-                        <button type="button" onClick={() => setInstitutionType('college')} className={`w-full py-2 px-4 rounded-lg border-2 transition ${institutionType === 'college' ? 'bg-blue-100 border-blue-500 dark:bg-blue-900/50 dark:border-blue-500' : 'bg-white border-slate-300 hover:border-blue-400 dark:bg-slate-700 dark:border-slate-600'}`}>College</button>
+                        <button type="button" onClick={() => setInstitutionType('school')} className={`w-full py-3 px-4 rounded-2xl border-2 transition font-bold ${institutionType === 'school' ? 'bg-orange-500/10 border-[--brand-orange] dark:bg-orange-500/20' : 'bg-black/5 border-transparent hover:border-black/10 dark:bg-white/10 dark:hover:border-white/20'}`}>School</button>
+                        <button type="button" onClick={() => setInstitutionType('college')} className={`w-full py-3 px-4 rounded-2xl border-2 transition font-bold ${institutionType === 'college' ? 'bg-orange-500/10 border-[--brand-orange] dark:bg-orange-500/20' : 'bg-black/5 border-transparent hover:border-black/10 dark:bg-white/10 dark:hover:border-white/20'}`}>College</button>
                     </div>
                 </fieldset>
                 
                 {institutionType && (
                     <div className="relative" ref={dropdownRef}>
-                        <label htmlFor="institution" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        <label htmlFor="institution" className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">
                           Institution Name
                         </label>
                         <div className="relative">
@@ -196,12 +186,12 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                               onFocus={() => setIsDropdownOpen(true)}
                               placeholder={`Search for a ${institutionType}...`}
                               autoComplete="off"
-                              className="w-full py-2 px-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                              className="w-full py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl"
                             />
                             {isDropdownOpen && (
-                                <ul className="absolute z-10 w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg">
+                                <ul className="absolute z-10 w-full bg-white dark:bg-[--dark-surface] border-2 border-black/10 dark:border-white/10 rounded-2xl mt-1 max-h-60 overflow-y-auto shadow-lg">
                                     {filteredInstitutions.map((inst, idx) => (
-                                        <li key={idx} onClick={() => handleSelectInstitution(inst)} className="px-4 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700">{inst}</li>
+                                        <li key={idx} onClick={() => handleSelectInstitution(inst)} className="px-4 py-2 cursor-pointer hover:bg-black/5 dark:hover:bg-white/10">{inst}</li>
                                     ))}
                                 </ul>
                             )}
@@ -212,42 +202,34 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                               value={otherInstitution}
                               onChange={(e) => setOtherInstitution(e.target.value)}
                               placeholder="Please specify your institution"
-                              className="w-full mt-2 py-2 px-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                              className="w-full mt-2 py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl"
                             />
                         )}
                     </div>
                 )}
                 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                    <div className="relative">
-                        <UserCircleIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-3" />
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600" />
-                    </div>
+                    <label className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">Full Name</label>
+                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" required className="w-full py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
-                    <div className="relative">
-                        <EnvelopeIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-3" />
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600" />
-                    </div>
+                    <label className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">Email Address</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="w-full py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl" />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
+                 <div>
+                    <label className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">Password</label>
                     <div className="relative">
-                        <LockClosedIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-3" />
-                        <input type={isPasswordVisible ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600" />
-                         <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <input type={isPasswordVisible ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="w-full pr-12 py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl" />
+                         <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-charcoal] dark:hover:text-white">
                             {isPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                         </button>
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm Password</label>
+                    <label className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">Confirm Password</label>
                     <div className="relative">
-                        <LockClosedIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-3" />
-                        <input type={isConfirmPasswordVisible ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" required className="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600" />
-                        <button type="button" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <input type={isConfirmPasswordVisible ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" required className="w-full pr-12 py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl" />
+                        <button type="button" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-charcoal] dark:hover:text-white">
                             {isConfirmPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                         </button>
                     </div>
@@ -258,7 +240,7 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-[--brand-orange] text-white font-bold py-4 px-4 rounded-2xl hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                     {isLoading ? (
                         <>
@@ -270,15 +252,15 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                     )}
                 </button>
             </form>
-            <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-6">
+          </div>
+           <p className="text-center text-sm text-[--brand-slate] dark:text-slate-400 mt-8">
                 Already have an account?{' '}
-                <button onClick={() => setView('login')} className="font-semibold text-blue-600 hover:underline dark:text-blue-400">
+                <button onClick={() => setView('login')} className="font-bold text-[--brand-orange] hover:underline">
                     Log In
                 </button>
             </p>
         </div>
       </div>
-    </div>
   );
 };
 

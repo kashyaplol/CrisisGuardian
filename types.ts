@@ -39,7 +39,7 @@ export interface DisasterModule {
   type: DisasterType;
   title: string;
   description: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: string;
   studyMaterial: {
     introduction: string;
     keyPoints: { title: string; detail: string }[];
@@ -63,6 +63,7 @@ export type View = 'welcome' | 'signup' | 'login' | 'verifyOtp' | 'home' | 'modu
 
 export type Theme = 'light' | 'dark';
 
+// FIX: Corrected the value for 'Medium' to prevent duplicate keys in objects using this enum.
 export enum Difficulty {
   Easy = 'Easy',
   Medium = 'Medium',

@@ -10,43 +10,42 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ setView, user }) => {
   return (
     <div className="text-center">
-      <div
-        className="bg-cover bg-center rounded-lg shadow-lg p-12 md:p-20 mb-8"
-        style={{ backgroundImage: `url('https://picsum.photos/1200/400?grayscale&blur=2')` }}
-      >
-        <div className="bg-black bg-opacity-50 rounded-lg p-8">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
-            Welcome, {user.name}!
-            </h1>
-            <p className="mt-4 text-lg md:text-xl text-slate-200 max-w-3xl mx-auto">
-            Ready to become a CrisisGuardian? Learn essential safety skills and test your knowledge with real-world virtual drills.
-            </p>
-        </div>
+      <div className="max-w-4xl mx-auto mb-16">
+        <h1 className="text-5xl md:text-7xl font-bold text-[--brand-charcoal] dark:text-white leading-tight">
+          Welcome, {user.name}!
+        </h1>
+        <p className="mt-6 text-lg md:text-xl text-[--brand-slate] dark:text-slate-300 max-w-2xl mx-auto">
+          Ready to become a CrisisGuardian? Learn essential safety skills and test your knowledge with real-world virtual drills.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
-          <BookOpenIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2 dark:text-slate-100">Explore Modules</h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">
+        <div className="bg-white dark:bg-[--dark-surface] p-8 rounded-3xl soft-shadow soft-shadow-hover flex flex-col items-center">
+          <div className="p-4 bg-blue-100 dark:bg-blue-500/20 rounded-full mb-6">
+            <BookOpenIcon className="h-10 w-10 text-blue-600 dark:text-blue-300" />
+          </div>
+          <h2 className="text-3xl font-bold mb-3 dark:text-white">Explore Modules</h2>
+          <p className="text-[--brand-slate] dark:text-slate-400 mb-8 text-center flex-grow">
             Dive into our educational modules covering earthquakes, floods, fires, and more.
           </p>
           <button
             onClick={() => setView('modules')}
-            className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center"
+            className="w-full bg-[--brand-charcoal] dark:bg-slate-200 text-white dark:text-[--brand-charcoal] font-bold py-4 px-6 rounded-2xl hover:bg-black/80 dark:hover:bg-white/90 transition-all duration-300 transform hover:-translate-y-1"
           >
             Start Learning
           </button>
         </div>
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
-          <BoltIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2 dark:text-slate-100">Launch a Drill</h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">
+        <div className="bg-white dark:bg-[--dark-surface] p-8 rounded-3xl soft-shadow soft-shadow-hover flex flex-col items-center">
+          <div className="p-4 bg-green-100 dark:bg-green-500/20 rounded-full mb-6">
+            <BoltIcon className="h-10 w-10 text-green-600 dark:text-green-300" />
+          </div>
+          <h2 className="text-3xl font-bold mb-3 dark:text-white">Launch a Drill</h2>
+          <p className="text-[--brand-slate] dark:text-slate-400 mb-8 text-center flex-grow">
             Experience a realistic disaster scenario and make critical decisions in a safe environment.
           </p>
           <button
             onClick={() => setView('drills')}
-            className="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center justify-center"
+            className="w-full bg-[--brand-orange] text-white font-bold py-4 px-6 rounded-2xl hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-1"
           >
             Begin Virtual Drill
           </button>
