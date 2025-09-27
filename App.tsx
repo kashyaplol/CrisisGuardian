@@ -16,6 +16,7 @@ import RegisterInstitution from './components/RegisterInstitution';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import VideoLessons from './components/VideoLessons';
+import AISafetyAdvisor from './components/AISafetyAdvisor';
 import { DEFAULT_AVATARS } from './constants';
 import * as authService from './services/authService';
 import * as analyticsService from './services/analyticsService';
@@ -296,6 +297,8 @@ const App: React.FC = () => {
       </div>
     );
   }
+  
+  const showAISafetyAdvisor = ['home', 'modules', 'drills'].includes(currentView);
 
   return (
     <div className="min-h-screen">
@@ -308,9 +311,14 @@ const App: React.FC = () => {
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
-      <main key={currentView} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 view-container-animation">
-        {renderAppView()}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div key={currentView} className="view-container-animation">
+          {renderAppView()}
+        </div>
       </main>
+      {showAISafetyAdvisor && (
+          <AISafetyAdvisor context={currentView} />
+      )}
       <footer className="text-center py-8 text-sm text-[--brand-slate] dark:text-slate-400">
           <p>&copy; {new Date().getFullYear()} CrisisGuardian. Secure. Smart. Prepared.</p>
       </footer>

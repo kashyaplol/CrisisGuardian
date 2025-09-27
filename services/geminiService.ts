@@ -1,14 +1,12 @@
-
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { DisasterType, DrillStep, DrillStepOption } from '../types';
 
 
-if (!import.meta.env.VITE_API_KEY) {
-  throw new Error("VITE_API_KEY environment variable is not set.");
+if (!process.env.API_KEY) {
+  throw new Error("API_KEY environment variable is not set.");
 }
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const responseSchema = {
   type: Type.OBJECT,
@@ -154,4 +152,49 @@ export const generateDrillScenario = async (disasterType: DisasterType, region: 
     console.error("Error generating drill scenario:", error);
     return null;
   }
+};
+
+export const generateSafetyTips = async (context: string): Promise<string | null> => {
+    let contextDescription: string;
+    switch(context) {
+        case 'home':
+            contextDescription = "on the main home screen of the app. Give general preparedness tips.";
+            break;
+        case 'modules':
+            contextDescription = "looking at the list of available disaster study modules. Give tips about the importance of learning.";
+            break;
+        case 'drills':
+            contextDescription = "in the virtual drills lobby, preparing to start a simulation. Give tips about how to approach a drill.";
+            break;
+        case DisasterType.Earthquake:
+        case DisasterType.Flood:
+        case DisasterType.Fire:
+        case DisasterType.Cyclone:
+            contextDescription = `studying the '${context}' disaster module. Give specific tips for this disaster.`;
+            break;
+        default:
+            contextDescription = "using the app. Give general safety tips.";
+    }
+
+    const prompt = `You are an AI Safety Advisor for the CrisisGuardian app. A user is currently ${contextDescription}. 
+    Generate 3 to 5 concise, actionable safety tips for them. 
+    The tips should be encouraging and easy to understand for a student audience in India. 
+    Format each tip on a new line, starting with a relevant emoji. Do not use markdown like bullet points.
+    Example:
+    📚 Knowledge is power! Regularly review your study modules to keep safety info fresh in your mind.
+    ✅ Check your family's emergency kit every six months to ensure supplies are not expired.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                temperature: 0.7,
+            }
+        });
+        return response.text;
+    } catch (error) {
+        console.error("Error generating safety tips:", error);
+        return null;
+    }
 };

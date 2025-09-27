@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DisasterModule } from '../types';
 import { DISASTER_MODULES } from '../constants';
 import { XCircleIcon, CheckCircleIcon, BookOpenIcon } from './icons/Icons';
+import AISafetyAdvisor from './AISafetyAdvisor';
 
 const StudyMaterialModal: React.FC<{
   module: DisasterModule;
@@ -50,6 +51,7 @@ const StudyMaterialModal: React.FC<{
                 </button>
             </div>
         </div>
+        <AISafetyAdvisor context={module.type} />
     </div>
   );
 };
