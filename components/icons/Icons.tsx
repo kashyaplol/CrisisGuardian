@@ -4,11 +4,11 @@ type IconProps = React.SVGProps<SVGSVGElement>;
 
 export const CrisisGuardianLogo: React.FC<{ className?: string }> = ({ className }) => (
     <div className={`flex items-center ${className}`}>
-      <div className="w-12 h-12 bg-[--brand-orange] rounded-2xl flex items-center justify-center soft-shadow">
+      <div className="w-12 h-12 bg-[--brand-purple] rounded-2xl flex items-center justify-center soft-shadow">
         <ShieldCheckIcon className="h-7 w-7 text-white" />
       </div>
       <div className="ml-3">
-        <span className="block text-xl font-bold tracking-tight leading-tight text-[--brand-charcoal] dark:text-white font-heading">CrisisGuardian</span>
+        <span className="block text-xl font-bold tracking-tight leading-tight text-[--brand-text] dark:text-white font-heading">CrisisGuardian</span>
       </div>
     </div>
 );
@@ -250,5 +250,29 @@ export const PlayCircleIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+    </svg>
+);
+
+export const TrophyBronzeIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props} className={`text-yellow-600 ${props.className}`}>
+    <path fillRule="evenodd" d="M4.5 3.75a3 3 0 00-3 3v10.5a3 3 0 003 3h15a3 3 0 003-3V6.75a3 3 0 00-3-3h-15zm4.125 3a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zm-3.875 3.75a.375.375 0 01.375-.375h2.25a.375.375 0 010 .75h-2.25a.375.375 0 01-.375-.375zM12 8.25a.75.75 0 000 1.5h6a.75.75 0 000-1.5h-6zM12 12a.75.75 0 000 1.5h6a.75.75 0 000-1.5h-6zM12 15.75a.75.75 0 000 1.5h6a.75.75 0 000-1.5h-6z" clipRule="evenodd" />
+  </svg>
+);
+
+export const TrophySilverIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props} className={`text-gray-400 ${props.className}`}>
+    <path fillRule="evenodd" d="M5.25 2.25a3 3 0 00-3 3v13.5a3 3 0 003 3h13.5a3 3 0 003-3V5.25a3 3 0 00-3-3H5.25zm1.5 9a.75.75 0 01.75-.75h4.5a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75zm6 0a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008zM9 15a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v-.008zM9.75 6a.75.75 0 00-1.5 0v2.25a.75.75 0 001.5 0V6z" clipRule="evenodd" />
+  </svg>
+);
+
+export const TrophyGoldIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props} className={`text-yellow-500 ${props.className}`}>
+    <path fillRule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071 1.052A2.25 2.25 0 0113.5 6.75v1.5c0 .621.504 1.125 1.125 1.125h1.5a2.25 2.25 0 012.25 2.25v1.5a2.25 2.25 0 01-2.25 2.25h-1.5a2.25 2.25 0 01-2.25-2.25v-1.5A2.25 2.25 0 0113.5 9h-3.75a2.25 2.25 0 01-2.25 2.25v1.5a2.25 2.25 0 01-2.25 2.25H3.75a2.25 2.25 0 01-2.25-2.25v-1.5A2.25 2.25 0 013.75 9h1.5a2.25 2.25 0 012.25-2.25v-1.5A2.25 2.25 0 019.75 3a.75.75 0 001.071-1.052l-1.022-1.022a.75.75 0 00-1.06 0L6.44 3.25a.75.75 0 001.06 1.06l.25-.25a.75.75 0 011.06 0l.25.25a.75.75 0 001.06 0l.25-.25a.75.75 0 011.06 0l.25.25a.75.75 0 001.06 0l.25-.25a.75.75 0 011.06 0l1.286 1.286z" clipRule="evenodd" />
+  </svg>
+);
+
+export const ChevronDownIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
     </svg>
 );

@@ -103,6 +103,11 @@ export const seedInitialUsers = async () => {
             score: 78,
             avatar: DEFAULT_AVATARS[1].id,
             drillHistory: [],
+            // FIX: Add missing properties to conform to User type
+            xp: 1250, // Example XP
+            level: 4, // Calculated from XP
+            streak: { count: 3, lastActivityDate: new Date(Date.now() - 86400000).toISOString() }, // 3 day streak, yesterday
+            unlockedAchievements: [],
         };
         usersModified = true;
     }
@@ -119,6 +124,11 @@ export const seedInitialUsers = async () => {
             score: 0,
             avatar: DEFAULT_AVATARS[2].id,
             drillHistory: [],
+            // FIX: Add missing properties to conform to User type
+            xp: 0,
+            level: 1,
+            streak: { count: 0, lastActivityDate: null },
+            unlockedAchievements: [],
         };
         usersModified = true;
     }

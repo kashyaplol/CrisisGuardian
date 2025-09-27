@@ -26,12 +26,12 @@ const RoleCard: React.FC<{
     onClick={() => onSelect(role)}
     className={`w-full p-4 text-center border-2 rounded-2xl transition-all duration-300 flex flex-col items-center justify-center h-full ${
       selectedRole === role
-        ? 'bg-orange-500/10 border-[--brand-orange] ring-2 ring-[--brand-orange] dark:bg-orange-500/20'
+        ? 'bg-purple-500/10 border-[--brand-purple] ring-2 ring-[--brand-purple] dark:bg-purple-500/20'
         : 'bg-black/5 border-transparent hover:border-black/10 dark:bg-white/10 dark:hover:border-white/20'
     }`}
   >
-    <Icon className={`h-10 w-10 mx-auto mb-2 ${selectedRole === role ? 'text-[--brand-orange]' : 'text-[--brand-slate] dark:text-slate-400'}`} />
-    <span className="font-semibold text-sm text-[--brand-charcoal] dark:text-slate-300">{role}</span>
+    <Icon className={`h-10 w-10 mx-auto mb-2 ${selectedRole === role ? 'text-[--brand-purple]' : 'text-[--brand-slate]'}`} />
+    <span className="font-semibold text-sm">{role}</span>
   </button>
 );
 
@@ -143,20 +143,20 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-beige] dark:bg-[--dark-bg] p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-bg] dark:bg-[--dark-bg] p-6">
       <div className="w-full max-w-md">
            <div className="text-center mb-10">
                 <CrisisGuardianLogo className="justify-center" />
             </div>
           <div className="bg-white dark:bg-[--dark-surface] p-8 rounded-3xl soft-shadow">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-[--brand-charcoal] dark:text-white">Create Your Account</h2>
-              <p className="text-[--brand-slate] dark:text-slate-400 mt-2">Join the mission to build a safer tomorrow.</p>
+              <h2 className="text-3xl font-bold">Create Your Account</h2>
+              <p className="text-[--brand-slate] mt-2">Join the mission to build a safer tomorrow.</p>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
                 <fieldset>
-                    <legend className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">I am a...</legend>
+                    <legend className="block text-sm font-semibold text-[--brand-slate] mb-2">I am a...</legend>
                     <div className="grid grid-cols-3 gap-4">
                         <RoleCard role={UserRole.Student} icon={AcademicCapIcon} selectedRole={selectedRole} onSelect={setSelectedRole} />
                         <RoleCard role={UserRole.Teacher} icon={BriefcaseIcon} selectedRole={selectedRole} onSelect={setSelectedRole} />
@@ -165,16 +165,16 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                 </fieldset>
 
                 <fieldset>
-                    <legend className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">My institution is a...</legend>
+                    <legend className="block text-sm font-semibold text-[--brand-slate] mb-2">My institution is a...</legend>
                     <div className="flex gap-4">
-                        <button type="button" onClick={() => setInstitutionType('school')} className={`w-full py-3 px-4 rounded-2xl border-2 transition font-bold ${institutionType === 'school' ? 'bg-orange-500/10 border-[--brand-orange] dark:bg-orange-500/20' : 'bg-black/5 border-transparent hover:border-black/10 dark:bg-white/10 dark:hover:border-white/20'}`}>School</button>
-                        <button type="button" onClick={() => setInstitutionType('college')} className={`w-full py-3 px-4 rounded-2xl border-2 transition font-bold ${institutionType === 'college' ? 'bg-orange-500/10 border-[--brand-orange] dark:bg-orange-500/20' : 'bg-black/5 border-transparent hover:border-black/10 dark:bg-white/10 dark:hover:border-white/20'}`}>College</button>
+                        <button type="button" onClick={() => setInstitutionType('school')} className={`w-full py-3 px-4 rounded-2xl border-2 transition font-bold ${institutionType === 'school' ? 'bg-purple-500/10 border-[--brand-purple] dark:bg-purple-500/20' : 'bg-black/5 border-transparent hover:border-black/10 dark:bg-white/10 dark:hover:border-white/20'}`}>School</button>
+                        <button type="button" onClick={() => setInstitutionType('college')} className={`w-full py-3 px-4 rounded-2xl border-2 transition font-bold ${institutionType === 'college' ? 'bg-purple-500/10 border-[--brand-purple] dark:bg-purple-500/20' : 'bg-black/5 border-transparent hover:border-black/10 dark:bg-white/10 dark:hover:border-white/20'}`}>College</button>
                     </div>
                 </fieldset>
                 
                 {institutionType && (
                     <div className="relative" ref={dropdownRef}>
-                        <label htmlFor="institution" className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">
+                        <label htmlFor="institution" className="block text-sm font-semibold text-[--brand-slate] mb-2">
                           Institution Name
                         </label>
                         <div className="relative">
@@ -186,10 +186,10 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                               onFocus={() => setIsDropdownOpen(true)}
                               placeholder={`Search for a ${institutionType}...`}
                               autoComplete="off"
-                              className="w-full py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl"
+                              className="w-full py-3 px-4 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl"
                             />
                             {isDropdownOpen && (
-                                <ul className="absolute z-10 w-full bg-white dark:bg-[--dark-surface] border-2 border-black/10 dark:border-white/10 rounded-2xl mt-1 max-h-60 overflow-y-auto shadow-lg">
+                                <ul className="absolute z-10 w-full bg-white dark:bg-[--dark-surface] border-2 border-black/5 dark:border-white/10 rounded-2xl mt-1 max-h-60 overflow-y-auto shadow-lg">
                                     {filteredInstitutions.map((inst, idx) => (
                                         <li key={idx} onClick={() => handleSelectInstitution(inst)} className="px-4 py-2 cursor-pointer hover:bg-black/5 dark:hover:bg-white/10">{inst}</li>
                                     ))}
@@ -202,34 +202,42 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                               value={otherInstitution}
                               onChange={(e) => setOtherInstitution(e.target.value)}
                               placeholder="Please specify your institution"
-                              className="w-full mt-2 py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl"
+                              className="w-full mt-2 py-3 px-4 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl"
                             />
                         )}
                     </div>
                 )}
                 
                 <div>
-                    <label className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">Full Name</label>
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" required className="w-full py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl" />
+                    <label className="block text-sm font-semibold text-[--brand-slate] mb-2">Full Name</label>
+                    <div className="relative">
+                        <UserCircleIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-4" aria-hidden="true" />
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" required className="w-full py-3 pl-12 pr-4 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl" />
+                    </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">Email Address</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="w-full py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl" />
+                    <label className="block text-sm font-semibold text-[--brand-slate] mb-2">Email Address</label>
+                     <div className="relative">
+                        <EnvelopeIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-4" aria-hidden="true" />
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="w-full py-3 pl-12 pr-4 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl" />
+                    </div>
                 </div>
                  <div>
-                    <label className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">Password</label>
+                    <label className="block text-sm font-semibold text-[--brand-slate] mb-2">Password</label>
                     <div className="relative">
-                        <input type={isPasswordVisible ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="w-full pr-12 py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl" />
-                         <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-charcoal] dark:hover:text-white">
+                        <LockClosedIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-4" aria-hidden="true" />
+                        <input type={isPasswordVisible ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="w-full pr-12 py-3 pl-12 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl" />
+                         <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-text] dark:hover:text-white">
                             {isPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                         </button>
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">Confirm Password</label>
+                    <label className="block text-sm font-semibold text-[--brand-slate] mb-2">Confirm Password</label>
                     <div className="relative">
-                        <input type={isConfirmPasswordVisible ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" required className="w-full pr-12 py-3 px-4 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl" />
-                        <button type="button" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-charcoal] dark:hover:text-white">
+                        <LockClosedIcon className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-slate-400 ml-4" aria-hidden="true" />
+                        <input type={isConfirmPasswordVisible ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" required className="w-full pr-12 py-3 pl-12 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl" />
+                        <button type="button" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-text] dark:hover:text-white">
                             {isConfirmPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                         </button>
                     </div>
@@ -240,7 +248,7 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[--brand-orange] text-white font-bold py-4 px-4 rounded-2xl hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-[--brand-purple] text-white font-bold py-4 px-4 rounded-2xl hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                     {isLoading ? (
                         <>
@@ -253,9 +261,9 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
                 </button>
             </form>
           </div>
-           <p className="text-center text-sm text-[--brand-slate] dark:text-slate-400 mt-8">
+           <p className="text-center text-sm text-[--brand-slate] mt-8">
                 Already have an account?{' '}
-                <button onClick={() => setView('login')} className="font-bold text-[--brand-orange] hover:underline">
+                <button onClick={() => setView('login')} className="font-bold text-[--brand-purple] hover:underline">
                     Log In
                 </button>
             </p>

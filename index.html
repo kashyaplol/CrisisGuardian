@@ -11,32 +11,45 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --brand-beige: #F4F1EC;
+      /* New WonderKids Theme Palette */
+      --brand-purple: #6A44D2;
+      --brand-yellow: #FFD15C;
+      --brand-light-purple: #E8E4F9;
+      --brand-bg: #F7F5FD;
+      --brand-text: #3D2C7A;
+      --brand-slate: #7B72A4;
       --brand-white: #FFFFFF;
-      --brand-orange: #FF4D00;
-      --brand-charcoal: #2D2D2D;
-      --brand-slate: #5B5B5B;
-      --dark-bg: #1C1C1E;
-      --dark-surface: #2C2C2E;
-      --dark-text: #F2F2F7;
+
+      /* Dark Mode Palette */
+      --dark-bg: #1A103A;
+      --dark-surface: #291E52;
+      --dark-text: #E8E4F9;
+
       --font-heading: 'Fredoka', sans-serif;
       --font-body: 'Plus Jakarta Sans', sans-serif;
     }
 
     body {
       font-family: var(--font-body);
-      background-color: var(--brand-beige);
-      color: var(--brand-charcoal);
+      background-color: var(--brand-bg);
+      background-image: radial-gradient(circle at top left, var(--brand-light-purple), var(--brand-bg) 40%);
+      color: var(--brand-text);
+      background-attachment: fixed;
     }
 
     .dark body {
         background-color: var(--dark-bg);
+        background-image: radial-gradient(circle at top left, var(--dark-surface), var(--dark-bg) 40%);
         color: var(--dark-text);
     }
 
     h1, h2, h3, .font-heading {
       font-family: var(--font-heading);
       font-weight: 600;
+      color: var(--brand-text);
+    }
+    .dark h1, .dark h2, .dark h3, .dark .font-heading {
+       color: var(--dark-text);
     }
     
     .no-scroll {
@@ -44,54 +57,53 @@
     }
     
     .soft-shadow {
-      box-shadow: 0px 8px 24px rgba(45, 45, 45, 0.08);
+      box-shadow: 0 4px 12px rgba(106, 68, 210, 0.08);
       transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
     .soft-shadow-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0px 16px 32px rgba(45, 45, 45, 0.12);
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 10px 25px rgba(106, 68, 210, 0.15);
     }
 
-    /* New Auth Page Animations */
-    @keyframes fade-in-slow {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    .highlight-yellow {
+      position: relative;
+      display: inline-block;
     }
-    .animate-fade-in-slow {
-      animation: fade-in-slow 1s ease-out forwards;
+    .highlight-yellow::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: -5%;
+      right: -5%;
+      height: 45%;
+      background-color: var(--brand-yellow);
+      border-radius: 8px;
+      z-index: 0;
+      transform: rotate(-1deg);
     }
-
-    @keyframes slide-in-from-right {
-      from {
-        opacity: 0;
-        transform: translateX(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    .animate-slide-in-from-right {
-      animation: slide-in-from-right 0.6s ease-out forwards;
-      animation-delay: 0.2s; /* Start after brand panel fades in */
-      opacity: 0; /* Start hidden */
-      animation-fill-mode: forwards;
+    .highlight-yellow > span {
+      position: relative;
+      z-index: 1;
     }
     
+    .underline-squiggle {
+        background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none'/%3e%3cpath d='M2 6C2.41 4.93 4.14 3.75 6.2 4.15C9.33 4.75 10.25 7.33 13.5 7.5C17.43 7.7 18.42 5.25 21.5 5.25C24.58 5.25 25.57 7.75 28.5 7.5C31.43 7.25 32.42 4.75 35.5 5.25C38.58 5.75 39.57 7.75 42.5 7.5C45.43 7.25 46.42 4.75 49.5 5.25' stroke='%23FFD15C' stroke-width='3' stroke-linecap='round' stroke-linejoin='miter' stroke-dashoffset='0' fill='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: bottom;
+        background-size: 100% 12px;
+        padding-bottom: 8px;
+    }
+
+    /* Auth Page Animations */
+    @keyframes fade-in-slow { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in-slow { animation: fade-in-slow 1s ease-out forwards; }
+    
     /* Main View Transition Animation */
-    @keyframes view-fade-in {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .view-container-animation {
-      animation: view-fade-in 0.5s ease-out forwards;
-    }
+    @keyframes view-fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .view-container-animation { animation: view-fade-in 0.5s ease-out forwards; }
+
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
     
     /* Sidebar Animations */
     @keyframes slideInFromLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
@@ -104,66 +116,33 @@
     .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
     .animate-fade-out { animation: fadeOut 0.3s ease-out forwards; }
 
-
     /* Animations for Virtual Drill */
     @keyframes shake {
-      10%, 90% { transform: translate3d(-1px, 0, 0); }
-      20%, 80% { transform: translate3d(2px, 0, 0); }
-      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-      40%, 60% { transform: translate3d(4px, 0, 0); }
+      10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); }
     }
-    .animate-shake {
-      animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-    }
-
-    @keyframes rise {
-      from { height: 0%; opacity: 0; }
-      to { height: 25%; opacity: 1; }
-    }
+    .animate-shake { animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes rise { from { height: 0%; opacity: 0; } to { height: 25%; opacity: 1; } }
     .flood-overlay {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to top, rgba(66, 153, 225, 0.7), transparent);
-      animation: rise 5s ease-in-out forwards;
-      pointer-events: none;
-      z-index: 5;
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(106, 68, 210, 0.5), transparent);
+      animation: rise 5s ease-in-out forwards; pointer-events: none; z-index: 5;
     }
-
     @keyframes fire-glow {
-      0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 0, 0.6), 0 0 30px rgba(255, 107, 0, 0.4); }
-      50% { box-shadow: 0 0 25px rgba(255, 165, 0, 0.8), 0 0 40px rgba(255, 69, 0, 0.6); }
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 209, 92, 0.7), 0 0 30px rgba(255, 209, 92, 0.5); }
+      50% { box-shadow: 0 0 25px rgba(255, 209, 92, 0.9), 0 0 40px rgba(106, 68, 210, 0.6); }
     }
-    .animate-fire {
-      animation: fire-glow 2s ease-in-out infinite;
-    }
-
-    @keyframes wind-blow {
-      from { transform: translateX(-150px); }
-      to { transform: translateX(110%); }
-    }
+    .animate-fire { animation: fire-glow 2s ease-in-out infinite; }
+    @keyframes wind-blow { from { transform: translateX(-150px); } to { transform: translateX(110%); } }
     .wind-line {
-      position: absolute;
-      left: 0;
-      width: 150px;
-      height: 2px;
-      background: linear-gradient(to right, transparent, rgba(156, 163, 175, 0.4), transparent);
-      border-radius: 2px;
-      animation: wind-blow 2.5s linear infinite;
+      position: absolute; left: 0; width: 150px; height: 2px;
+      background: linear-gradient(to right, transparent, rgba(123, 114, 164, 0.4), transparent);
+      border-radius: 2px; animation: wind-blow 2.5s linear infinite;
     }
-
-    @keyframes chat-bubble-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-chat-bubble-in {
-      animation: chat-bubble-in 0.4s ease-out forwards;
-    }
+    @keyframes chat-bubble-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-chat-bubble-in { animation: chat-bubble-in 0.4s ease-out forwards; }
   </style>
   <script>
-    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark')
     } else {
@@ -177,7 +156,8 @@
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
     "react/": "https://aistudiocdn.com/react@^19.1.1/",
     "react": "https://aistudiocdn.com/react@^19.1.1",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.20.0"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.20.0",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.1.1"
   }
 }
 </script>

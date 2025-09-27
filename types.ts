@@ -7,13 +7,22 @@ export enum UserRole {
   Admin = 'Admin',
 }
 
+export type DrillMode = 'Standard' | 'Survival';
+
 export interface DrillResult {
   id: string;
   disasterType: DisasterType;
   difficulty: Difficulty;
-  score: number;
-  totalQuestions: number;
   date: string; // ISO Date string
+  mode: DrillMode;
+  score?: number; // For Standard: correct answers
+  totalQuestions?: number; // For Standard: total steps
+  stepsSurvived?: number; // For Survival: steps survived
+}
+
+export interface UnlockedAchievement {
+  achievementId: AchievementId;
+  dateUnlocked: string; // ISO Date string
 }
 
 export interface User {
@@ -22,10 +31,18 @@ export interface User {
   password: string;
   phone?: string;
   role: UserRole;
-  score: number;
-  avatar: string; // Can be a data URL for uploads or an ID for default avatars
+  score: number; // This is now the average score percentage from STANDARD drills
+  avatar: string;
   drillHistory: DrillResult[];
   institution: string;
+  // New Progression Fields
+  xp: number;
+  level: number;
+  streak: {
+    count: number;
+    lastActivityDate: string | null; // ISO Date string
+  };
+  unlockedAchievements: UnlockedAchievement[];
 }
 
 export enum DisasterType {
@@ -79,3 +96,56 @@ export interface AnalyticsData {
 }
 
 export type VideoStyle = 'cartoon' | 'realistic';
+
+// --- Achievements System ---
+
+export enum AchievementId {
+  // Drill Completion
+  FirstDrill = 'FIRST_DRILL',
+  FiveDrills = 'FIVE_DRILLS',
+  TenDrills = 'TEN_DRILLS',
+  // Score-based
+  PerfectScore = 'PERFECT_SCORE',
+  HighAchiever = 'HIGH_ACHIEVER', // >90% avg score
+  // Disaster Specific
+  EarthquakeMaster = 'EARTHQUAKE_MASTER',
+  FloodMaster = 'FLOOD_MASTER',
+  FireMaster = 'FIRE_MASTER',
+  CycloneMaster = 'CYCLONE_MASTER',
+  // Streaks
+  ThreeDayStreak = 'THREE_DAY_STREAK',
+  SevenDayStreak = 'SEVEN_DAY_STREAK',
+  // Learning
+  KnowledgeSeeker = 'KNOWLEDGE_SEEKER', // Study all modules (not yet implemented)
+}
+
+export enum AchievementTier {
+  Bronze = 'Bronze',
+  Silver = 'Silver',
+  Gold = 'Gold',
+}
+
+export interface Achievement {
+  id: AchievementId;
+  name: string;
+  description: string;
+  tier: AchievementTier;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+}
+
+export interface ProgressionSummary {
+    xpGained: number;
+    leveledUp: boolean;
+    oldLevel: number;
+    newLevel: number;
+    oldXp: number;
+    newXp: number;
+    newlyUnlocked: Achievement[];
+    streakUpdated: boolean;
+    newStreak: number;
+    // For summary modal context
+    mode: DrillMode;
+    score?: number;
+    totalQuestions?: number;
+    stepsSurvived?: number;
+}

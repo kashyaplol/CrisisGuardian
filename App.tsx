@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DisasterType, View, User, UserRole, Theme, Difficulty, DrillResult } from './types';
+import { DisasterType, View, User, UserRole, Theme, Difficulty, DrillResult, ProgressionSummary, DrillMode } from './types';
 import Header from './components/Header';
 import Home from './components/Home';
 import EducationModules from './components/EducationModules';
@@ -16,10 +16,11 @@ import RegisterInstitution from './components/RegisterInstitution';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import VideoLessons from './components/VideoLessons';
-import AISafetyAdvisor from './components/AISafetyAdvisor';
+import PostActivitySummary from './components/PostActivitySummary';
 import { DEFAULT_AVATARS } from './constants';
 import * as authService from './services/authService';
 import * as analyticsService from './services/analyticsService';
+import * as progressionService from './services/progressionService';
 
 // Define a type for the temporary authentication information
 type AuthInfo = {
@@ -43,6 +44,9 @@ const App: React.FC = () => {
   const [selectedDisaster, setSelectedDisaster] = useState<DisasterType | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [selectedRegion, setSelectedRegion] = useState<string>('Delhi');
+  const [selectedMode, setSelectedMode] = useState<DrillMode>('Standard');
+
+  const [lastDrillResult, setLastDrillResult] = useState<ProgressionSummary | null>(null);
   
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
@@ -148,6 +152,10 @@ const App: React.FC = () => {
                 score: 0,
                 avatar: DEFAULT_AVATARS[0].id,
                 drillHistory: [],
+                xp: 0,
+                level: 1,
+                streak: { count: 0, lastActivityDate: null },
+                unlockedAchievements: [],
             };
             await authService.createUser(newUser);
             await authService.createSession(newUser);
@@ -174,17 +182,20 @@ const App: React.FC = () => {
     setCurrentView('welcome');
   }, []);
 
-  const handleStartDrill = useCallback((disasterType: DisasterType, difficulty: Difficulty) => {
+  const handleStartDrill = useCallback((disasterType: DisasterType, difficulty: Difficulty, mode: DrillMode) => {
     setSelectedDisaster(disasterType);
     setSelectedDifficulty(difficulty);
+    setSelectedMode(mode);
     setCurrentView('drill');
   }, []);
 
   const handleDrillComplete = useCallback(async (result: {
-    disasterType: DisasterType;
-    difficulty: Difficulty;
-    score: number;
-    totalQuestions: number;
+      disasterType: DisasterType;
+      difficulty: Difficulty;
+      mode: DrillMode;
+      score?: number;
+      totalQuestions?: number;
+      stepsSurvived?: number;
   }) => {
     if (!currentUser) return;
 
@@ -194,26 +205,23 @@ const App: React.FC = () => {
       date: new Date().toISOString(),
     };
 
-    const updatedHistory = [...(currentUser.drillHistory || []), newDrillEntry];
-
-    // Recalculate average score
-    const totalScorePercentage = updatedHistory.reduce(
-      (sum, drill) => sum + (drill.score / drill.totalQuestions) * 100,
-      0
-    );
-    const newAverageScore = updatedHistory.length > 0 ? Math.round(totalScorePercentage / updatedHistory.length) : 0;
-
-    const updatedUser: User = {
-      ...currentUser,
-      score: newAverageScore,
-      drillHistory: updatedHistory,
-    };
-
+    const { updatedUser, summary } = progressionService.processActivityCompletion(currentUser, {
+        type: 'drill',
+        details: newDrillEntry,
+    });
+    
     setCurrentUser(updatedUser);
+    setLastDrillResult(summary);
     await authService.createSession(updatedUser);
-    // Update dashboard analytics
     await analyticsService.updateAnalyticsOnDrillComplete(newDrillEntry);
+
   }, [currentUser]);
+  
+  const handleCloseSummary = () => {
+      setLastDrillResult(null);
+      // Optional: navigate back to drills lobby after summary
+      setCurrentView('drills');
+  }
 
   const renderAuthView = () => {
       switch (currentView) {
@@ -254,7 +262,7 @@ const App: React.FC = () => {
         return <DrillsLobby onStartDrill={handleStartDrill} />;
       case 'drill':
         if (selectedDisaster) {
-          return <VirtualDrill disasterType={selectedDisaster} region={selectedRegion} difficulty={selectedDifficulty} onDrillComplete={handleDrillComplete} />;
+          return <VirtualDrill disasterType={selectedDisaster} region={selectedRegion} difficulty={selectedDifficulty} mode={selectedMode} onDrillComplete={handleDrillComplete} />;
         }
         return <Home setView={setCurrentView} user={currentUser} />; // Fallback
       case 'dashboard':
@@ -287,7 +295,7 @@ const App: React.FC = () => {
   };
   
   if (isLoading) {
-    return <div className="min-h-screen" />; // Or a loading spinner
+    return <div className="min-h-screen bg-[--brand-bg] dark:bg-[--dark-bg]" />; // Or a loading spinner
   }
 
   if (!currentUser) {
@@ -298,10 +306,8 @@ const App: React.FC = () => {
     );
   }
   
-  const showAISafetyAdvisor = ['home', 'modules', 'drills'].includes(currentView);
-
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
        <Header 
           currentView={currentView} 
           setView={setCurrentView} 
@@ -311,15 +317,19 @@ const App: React.FC = () => {
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div key={currentView} className="view-container-animation">
           {renderAppView()}
         </div>
       </main>
-      {showAISafetyAdvisor && (
-          <AISafetyAdvisor context={currentView} />
+      {lastDrillResult && currentUser && (
+          <PostActivitySummary 
+              summary={lastDrillResult} 
+              user={currentUser} 
+              onClose={handleCloseSummary}
+          />
       )}
-      <footer className="text-center py-8 text-sm text-[--brand-slate] dark:text-slate-400">
+      <footer className="text-center py-8 text-sm text-[--brand-slate]">
           <p>&copy; {new Date().getFullYear()} CrisisGuardian. Secure. Smart. Prepared.</p>
       </footer>
     </div>

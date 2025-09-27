@@ -11,7 +11,7 @@ interface AdminDashboardProps {
   theme: Theme;
 }
 
-const COLORS = ['#FF8042', '#00C49F', '#0088FE', '#FFBB28'];
+const COLORS = ['#6A44D2', '#FFD15C', '#82ca9d', '#ff8042'];
 
 // Placeholder data for the skills chart, which is not yet connected to dynamic data
 const skillData = [
@@ -110,7 +110,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, theme }) => {
         fetchData();
     }, []);
     
-    const tickColor = theme === 'dark' ? '#94a3b8' : '#5B5B5B';
+    const tickColor = theme === 'dark' ? '#94a3b8' : '#7B72A4';
     const gridColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
     const tooltipStyles = {
         contentStyle: { 
@@ -118,7 +118,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, theme }) => {
             border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
             borderRadius: '1rem',
         },
-        labelStyle: { color: theme === 'dark' ? 'var(--dark-text)' : 'var(--brand-charcoal)' }
+        labelStyle: { color: theme === 'dark' ? 'var(--dark-text)' : 'var(--brand-text)' }
     };
 
     if (isLoading) {
@@ -128,38 +128,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, theme }) => {
   return (
     <div>
         <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-[--brand-charcoal] sm:text-5xl dark:text-white">Admin Dashboard</h1>
-            <p className="mt-4 text-lg text-[--brand-slate] dark:text-slate-400">Overview of campus disaster preparedness and student engagement.</p>
+            <h1 className="text-4xl font-bold sm:text-5xl">Admin Dashboard</h1>
+            <p className="mt-4 text-lg text-[--brand-slate]">Overview of campus disaster preparedness and student engagement.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white dark:bg-[--dark-surface] p-6 rounded-3xl soft-shadow flex items-center">
-                <UsersIcon className="h-10 w-10 text-blue-500 mr-4"/>
+                <UsersIcon className="h-10 w-10 text-purple-500 mr-4"/>
                 <div>
-                    <p className="text-sm text-[--brand-slate] dark:text-slate-400">Total Participants</p>
-                    <p className="text-2xl font-bold dark:text-white">{stats.totalParticipants}</p>
+                    <p className="text-sm text-[--brand-slate]">Total Participants</p>
+                    <p className="text-2xl font-bold">{stats.totalParticipants}</p>
                 </div>
             </div>
             <div className="bg-white dark:bg-[--dark-surface] p-6 rounded-3xl soft-shadow flex items-center">
                 <ShieldCheckIcon className="h-10 w-10 text-green-500 mr-4"/>
                 <div>
-                    <p className="text-sm text-[--brand-slate] dark:text-slate-400">Overall Preparedness</p>
-                    <p className="text-2xl font-bold dark:text-white">{stats.overallPreparedness}%</p>
+                    <p className="text-sm text-[--brand-slate]">Overall Preparedness</p>
+                    <p className="text-2xl font-bold">{stats.overallPreparedness}%</p>
                 </div>
             </div>
              <div className="bg-white dark:bg-[--dark-surface] p-6 rounded-3xl soft-shadow flex items-center">
                 <PresentationChartBarIcon className="h-10 w-10 text-yellow-500 mr-4"/>
                 <div>
-                    <p className="text-sm text-[--brand-slate] dark:text-slate-400">Drills Completed</p>
-                    <p className="text-2xl font-bold dark:text-white">{stats.drillsCompleted}</p>
+                    <p className="text-sm text-[--brand-slate]">Drills Completed</p>
+                    <p className="text-2xl font-bold">{stats.drillsCompleted}</p>
                 </div>
             </div>
         </div>
         
         <div className="bg-white dark:bg-[--dark-surface] p-6 rounded-3xl soft-shadow mb-8">
-            <h3 className="text-xl font-semibold mb-4 dark:text-white">Admin Tools</h3>
+            <h3 className="text-xl font-semibold mb-4">Admin Tools</h3>
             <button
                 onClick={() => setView('registerInstitution')}
-                className="bg-[--brand-orange] text-white font-semibold py-3 px-5 rounded-xl hover:bg-orange-600 transition-colors flex items-center gap-2 transform hover:-translate-y-0.5"
+                className="bg-[--brand-purple] text-white font-semibold py-3 px-5 rounded-2xl hover:bg-purple-700 transition-colors flex items-center gap-2 transform hover:-translate-y-0.5"
             >
                 <AcademicCapIcon className="h-5 w-5" />
                 Register New Institution
@@ -168,20 +168,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, theme }) => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-white dark:bg-[--dark-surface] p-6 rounded-3xl soft-shadow">
-                <h3 className="text-lg font-semibold mb-4 dark:text-white">Drill Participation by Disaster</h3>
+                <h3 className="text-lg font-semibold mb-4">Drill Participation by Disaster</h3>
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={participationData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                     <XAxis dataKey="name" tick={{ fill: tickColor, fontSize: 12 }} />
                     <YAxis tick={{ fill: tickColor, fontSize: 12 }} allowDecimals={false} />
-                    <Tooltip {...tooltipStyles} cursor={{fill: 'rgba(0,0,0,0.05)'}}/>
+                    <Tooltip {...tooltipStyles} cursor={{fill: 'rgba(106, 68, 210, 0.1)'}}/>
                     <Legend wrapperStyle={{ color: tickColor, fontSize: 14 }}/>
-                    <Bar dataKey="Drills" fill="var(--brand-orange)" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="Drills" fill="var(--brand-purple)" radius={[8, 8, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
             <div className="bg-white dark:bg-[--dark-surface] p-6 rounded-3xl soft-shadow">
-                <h3 className="text-lg font-semibold mb-4 dark:text-white">Avg. Preparedness Score</h3>
+                <h3 className="text-lg font-semibold mb-4">Avg. Preparedness Score</h3>
                  <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                     <Pie
@@ -203,13 +203,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, theme }) => {
                 </ResponsiveContainer>
             </div>
             <div className="bg-white dark:bg-[--dark-surface] p-6 rounded-3xl soft-shadow col-span-1 lg:col-span-2">
-                <h3 className="text-lg font-semibold mb-4 dark:text-white">Skill Competency (Static Demo)</h3>
+                <h3 className="text-lg font-semibold mb-4">Skill Competency (Static Demo)</h3>
                 <ResponsiveContainer width="100%" height={300}>
                     <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillData}>
                         <PolarGrid stroke={gridColor}/>
                         <PolarAngleAxis dataKey="subject" tick={{ fill: tickColor, fontSize: 14 }} />
                         <PolarRadiusAxis tick={{ fill: tickColor }} angle={30} domain={[0, 100]}/>
-                        <Radar name="Campus Skills" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                        <Radar name="Campus Skills" dataKey="A" stroke="var(--brand-purple)" fill="var(--brand-purple)" fillOpacity={0.6} />
                         <Tooltip {...tooltipStyles} />
                     </RadarChart>
                 </ResponsiveContainer>

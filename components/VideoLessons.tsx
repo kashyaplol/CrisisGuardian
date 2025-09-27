@@ -35,16 +35,16 @@ const VideoLessons: React.FC<VideoLessonsProps> = ({ user }) => {
         return (
             <div>
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-[--brand-charcoal] sm:text-5xl dark:text-white">{lessonType} Lesson: {playingVideo.title}</h1>
-                    <p className="mt-4 text-lg text-[--brand-slate] dark:text-slate-400">Press play to learn!</p>
+                    <h1 className="text-4xl font-bold sm:text-5xl">{lessonType} Lesson: {playingVideo.title}</h1>
+                    <p className="mt-4 text-lg text-[--brand-slate]">Press play to learn!</p>
                 </div>
-                <div className="max-w-4xl mx-auto bg-black rounded-2xl soft-shadow overflow-hidden aspect-video">
+                <div className="max-w-4xl mx-auto bg-black rounded-3xl soft-shadow overflow-hidden aspect-video">
                     <video src={playingVideo.url} controls autoPlay className="w-full h-full" />
                 </div>
                 <div className="text-center mt-8">
                     <button
                         onClick={() => setPlayingVideo(null)}
-                        className="bg-[--brand-orange] text-white font-bold py-3 px-6 rounded-2xl hover:bg-orange-600 transition-colors flex items-center gap-2 mx-auto"
+                        className="bg-[--brand-purple] text-white font-bold py-3 px-6 rounded-2xl hover:bg-purple-700 transition-colors flex items-center gap-2 mx-auto"
                     >
                         <ArrowUturnLeftIcon className="h-5 w-5" />
                         Back to Lessons
@@ -57,24 +57,24 @@ const VideoLessons: React.FC<VideoLessonsProps> = ({ user }) => {
     return (
         <div>
             <div className="text-center mb-12">
-                <h1 className="text-4xl font-bold text-[--brand-charcoal] sm:text-5xl dark:text-white">Video Lessons</h1>
-                <p className="mt-4 text-lg text-[--brand-slate] dark:text-slate-400">
+                <h1 className="text-4xl font-bold sm:text-5xl">Video Lessons</h1>
+                <p className="mt-4 text-lg text-[--brand-slate]">
                     Select a topic to watch a pre-generated, {getVideoStyle() === 'cartoon' ? 'animated cartoon' : 'realistic simulation'} lesson.
                 </p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {DISASTER_MODULES.map((module) => (
-                    <div key={module.type} className="bg-white dark:bg-[--dark-surface] rounded-2xl soft-shadow soft-shadow-hover overflow-hidden flex flex-col">
+                    <div key={module.type} className="bg-white dark:bg-[--dark-surface] rounded-3xl soft-shadow soft-shadow-hover overflow-hidden flex flex-col">
                         <div className="p-6 bg-purple-500 flex justify-center items-center h-32">
                             <img src={module.icon} alt={module.title} className="h-16 w-16 filter brightness-0 invert" />
                         </div>
                         <div className="p-6 flex flex-col flex-grow">
-                            <h3 className="text-xl font-semibold mb-2 dark:text-white">{module.title}</h3>
-                            <p className="text-[--brand-slate] dark:text-slate-400 text-sm flex-grow mb-6">{module.description}</p>
+                            <h3 className="text-xl font-semibold mb-2">{module.title}</h3>
+                            <p className="text-[--brand-slate] text-sm flex-grow mb-6">{module.description}</p>
                             <button
                                 onClick={() => handleWatchVideo(module.type, module.title)}
-                                className="mt-auto w-full bg-[--brand-orange] hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2"
+                                className="mt-auto w-full bg-[--brand-purple] hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-2xl transition-colors duration-300 flex items-center justify-center gap-2"
                             >
                                 <PlayCircleIcon className="h-5 w-5" />
                                 Watch Lesson

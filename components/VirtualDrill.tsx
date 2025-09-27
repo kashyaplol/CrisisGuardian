@@ -1,43 +1,46 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { DisasterType, DrillStep, Difficulty, DrillStepOption } from '../types';
+import { DisasterType, DrillStep, Difficulty, DrillStepOption, DrillMode } from '../types';
 import { generateDrillScenario } from '../services/geminiService';
-import { CheckCircleIcon, XCircleIcon, SparklesIcon, ArrowPathIcon, ClockIcon } from './icons/Icons';
+import { CheckCircleIcon, XCircleIcon, SparklesIcon, ArrowPathIcon, ClockIcon, TrophyIcon } from './icons/Icons';
 
 interface VirtualDrillProps {
   disasterType: DisasterType;
   region: string;
   difficulty: Difficulty;
+  mode: DrillMode;
   onDrillComplete: (result: {
     disasterType: DisasterType;
     difficulty: Difficulty;
-    score: number;
-    totalQuestions: number;
+    mode: DrillMode;
+    score?: number;
+    totalQuestions?: number;
+    stepsSurvived?: number;
   }) => void;
 }
 
 const LoadingState: React.FC<{ message: string }> = ({ message }) => (
     <div className="flex flex-col items-center justify-center text-center p-8">
-        <ArrowPathIcon className="h-12 w-12 text-[--brand-orange] animate-spin mb-4" />
-        <p className="text-lg font-semibold text-[--brand-charcoal] dark:text-slate-300">{message}</p>
-        <p className="text-sm text-[--brand-slate] dark:text-slate-400 mt-2">Our AI is crafting a unique situation based on your selected region and disaster type. This may take a moment.</p>
+        <ArrowPathIcon className="h-12 w-12 text-[--brand-purple] animate-spin mb-4" />
+        <p className="text-lg font-semibold">{message}</p>
+        <p className="text-sm text-[--brand-slate] mt-2">Our AI is crafting a unique situation based on your selected region and disaster type. This may take a moment.</p>
     </div>
 );
 
 const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
-    <div className="text-center p-8 bg-red-500/10 border border-red-500/20 rounded-2xl">
+    <div className="text-center p-8 bg-red-500/10 border border-red-500/20 rounded-3xl">
         <XCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <p className="text-lg font-semibold text-red-700 dark:text-red-300">Failed to Generate Scenario</p>
-        <p className="text-sm text-[--brand-slate] dark:text-slate-400 mt-2">There was an issue connecting to the AI service. Please check your connection and try again.</p>
+        <p className="text-sm text-[--brand-slate] mt-2">There was an issue connecting to the AI service. Please check your connection and try again.</p>
         <button
             onClick={onRetry}
-            className="mt-4 bg-red-600 text-white font-semibold py-2 px-4 rounded-xl hover:bg-red-700 transition-colors"
+            className="mt-4 bg-red-600 text-white font-semibold py-2 px-4 rounded-2xl hover:bg-red-700 transition-colors"
         >
             Retry
         </button>
     </div>
 );
 
-const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, difficulty, onDrillComplete }) => {
+const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, difficulty, mode, onDrillComplete }) => {
   const [currentStep, setCurrentStep] = useState<DrillStep | null>(null);
   const [pastSteps, setPastSteps] = useState<DrillStep[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -51,18 +54,20 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [hasReportedCompletion, setHasReportedCompletion] = useState<boolean>(false);
 
+  const isSurvival = mode === 'Survival';
+
   const totalSteps = useMemo(() => {
+    if (isSurvival) return Infinity;
     switch (difficulty) {
         case Difficulty.Easy: return 1;
         case Difficulty.Medium: return 2;
         case Difficulty.Hard: return 3;
         default: return 1;
     }
-  }, [difficulty]);
+  }, [difficulty, isSurvival]);
   
   // --- Timer Logic ---
   useEffect(() => {
-    // FIX: Use ReturnType<typeof setInterval> for correct browser-based timer ID type.
     let timerInterval: ReturnType<typeof setInterval> | null = null;
     if (!isLoading && !isDrillFinished && currentStep) {
         timerInterval = setInterval(() => {
@@ -204,10 +209,10 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
     setIsHintVisible(false);
     setElapsedTime(0);
     setHasReportedCompletion(false);
-    setLoadingMessage(`Generating scenario 1 of ${totalSteps}...`);
+    setLoadingMessage(isSurvival ? 'Generating first survival scenario...' : `Generating scenario 1 of ${totalSteps}...`);
     
     playAmbientSound(disasterType);
-    const scenario = await generateDrillScenario(disasterType, region);
+    const scenario = await generateDrillScenario(disasterType, region, mode);
     
     if (scenario) {
       setCurrentStep(scenario);
@@ -216,7 +221,7 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
       stopAmbientSound();
     }
     setIsLoading(false);
-  }, [disasterType, region, playAmbientSound, stopAmbientSound, totalSteps]);
+  }, [disasterType, region, mode, playAmbientSound, stopAmbientSound, totalSteps, isSurvival]);
 
   useEffect(() => {
     startDrill();
@@ -227,36 +232,37 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
     if (!currentStep) return;
     
     const currentStepIndex = pastSteps.length + 1;
-    if (currentStepIndex >= totalSteps) {
+    if (!isSurvival && currentStepIndex >= totalSteps) {
         setIsDrillFinished(true);
         stopAmbientSound();
         return;
     }
 
     setIsLoading(true);
-    setLoadingMessage(`Generating scenario ${currentStepIndex + 1} of ${totalSteps}...`);
+    setLoadingMessage(isSurvival ? `Generating next survival scenario...` : `Generating scenario ${currentStepIndex + 1} of ${totalSteps}...`);
     setPastSteps(prev => [...prev, currentStep]);
     setCurrentStep(null); // Clear current step to show loader
     
     const previousStepContext = {
         scenario: currentStep.scenario,
         question: currentStep.question,
-        userAnswer: selectedOption
+        userAnswer: selectedOption,
+        stepsSurvived: isSurvival ? score + 1 : undefined,
     };
     
-    const nextScenario = await generateDrillScenario(disasterType, region, previousStepContext);
+    const nextScenario = await generateDrillScenario(disasterType, region, mode, previousStepContext);
     
     if (nextScenario) {
         setCurrentStep(nextScenario);
         setSelectedOptionIndex(null);
         setIsAnswered(false);
-        setIsHintVisible(false); // Hide hint for the new step
+        setIsHintVisible(false);
     } else {
         setError(true);
         stopAmbientSound();
     }
     setIsLoading(false);
-  }, [currentStep, pastSteps, totalSteps, disasterType, region, stopAmbientSound]);
+  }, [currentStep, pastSteps, totalSteps, disasterType, region, stopAmbientSound, isSurvival, mode, score]);
 
   const handleOptionSelect = (index: number) => {
     if (isAnswered || !currentStep) return;
@@ -269,24 +275,30 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
     
     if (isCorrect) {
       setScore(prev => prev + 1);
+      setTimeout(() => handleNextStep(currentStep.options[index]), 3000);
+    } else {
+      if (isSurvival) {
+        setTimeout(() => {
+          setIsDrillFinished(true);
+          stopAmbientSound();
+        }, 3000);
+      } else {
+        setTimeout(() => handleNextStep(currentStep.options[index]), 3000);
+      }
     }
-    
-    setTimeout(() => {
-        handleNextStep(currentStep.options[index]);
-    }, 3000);
   };
   
   useEffect(() => {
     if (isDrillFinished && !hasReportedCompletion) {
-      onDrillComplete({
-        disasterType,
-        difficulty,
-        score,
-        totalQuestions: totalSteps,
-      });
+      if (isSurvival) {
+        onDrillComplete({ disasterType, difficulty, mode, stepsSurvived: score });
+      } else {
+        onDrillComplete({ disasterType, difficulty, mode, score, totalQuestions: totalSteps });
+      }
       setHasReportedCompletion(true);
     }
-  }, [isDrillFinished, hasReportedCompletion, onDrillComplete, disasterType, difficulty, score, totalSteps]);
+  }, [isDrillFinished, hasReportedCompletion, onDrillComplete, disasterType, difficulty, mode, score, totalSteps, isSurvival]);
+
 
   const getOptionClasses = (index: number) => {
     if (!isAnswered) {
@@ -310,33 +322,20 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
         default: return '';
     }
   }, [disasterType, isDrillFinished, isLoading, error]);
+  
+  const progressPercentage = (pastSteps.length / totalSteps) * 100;
 
   if (isLoading && !currentStep) return <LoadingState message={loadingMessage} />;
   if (error) return <ErrorState onRetry={startDrill} />;
   
-  if(isDrillFinished) {
-      const isPerfectScore = score === totalSteps;
-      return (
-          <div className="text-center p-8 bg-white dark:bg-[--dark-surface] rounded-3xl soft-shadow max-w-4xl mx-auto">
-              <h2 className="text-4xl font-bold mb-4 dark:text-white">Drill Complete!</h2>
-              {isPerfectScore ? (
-                  <CheckCircleIcon className="h-20 w-20 text-green-500 mx-auto mb-4" />
-              ) : (
-                  <XCircleIcon className="h-20 w-20 text-yellow-500 mx-auto mb-4" />
-              )}
-              <p className="text-2xl font-semibold dark:text-white">You scored {score} out of {totalSteps}</p>
-              <p className="text-[--brand-slate] dark:text-slate-400 mt-2">Time Taken: {formatTime(elapsedTime)}</p>
-              <p className="text-[--brand-slate] dark:text-slate-400 mt-2 mb-6">
-                {isPerfectScore ? "Excellent work! You're a true CrisisGuardian." : "Good effort! Every drill is a learning opportunity."}
-              </p>
-              <button
-                  onClick={startDrill}
-                  className="bg-[--brand-orange] text-white font-bold py-3 px-6 rounded-2xl hover:bg-orange-600 transition-colors"
-              >
-                  Try Another Scenario
-              </button>
-          </div>
-      )
+  if (isDrillFinished) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center p-8">
+        <CheckCircleIcon className="h-12 w-12 text-green-500 mb-4" />
+        <p className="text-lg font-semibold">Drill Complete!</p>
+        <p className="text-sm text-[--brand-slate] mt-2">Calculating your results...</p>
+    </div>
+    );
   }
 
   return (
@@ -356,33 +355,50 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
         )}
 
         <div className={`bg-white dark:bg-[--dark-surface] p-6 sm:p-8 rounded-3xl soft-shadow relative z-10 ${animationClass}`}>
-            <div className="border-b border-black/10 dark:border-white/10 pb-4 mb-6 flex justify-between items-center">
-                <h1 className="text-2xl sm:text-3xl font-bold text-[--brand-charcoal] dark:text-white">
-                    <span className="text-[--brand-orange]">{disasterType} Drill</span>
-                </h1>
-                <div className="flex items-center space-x-2 sm:space-x-4">
-                    <div className="flex items-center text-sm font-semibold text-[--brand-slate] dark:text-slate-400 bg-black/5 dark:bg-white/10 px-3 py-1 rounded-full">
-                        <ClockIcon className="h-4 w-4 mr-1.5" />
-                        <span>{formatTime(elapsedTime)}</span>
-                    </div>
-                    <div className="text-sm font-semibold text-[--brand-slate] dark:text-slate-400 bg-black/5 dark:bg-white/10 px-3 py-1 rounded-full">
-                        Step {pastSteps.length + 1} of {totalSteps}
+            <div className="border-b border-black/10 dark:border-white/10 pb-4 mb-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl sm:text-3xl font-bold">
+                        <span className="text-[--brand-purple]">{disasterType} Drill {isSurvival && '(Survival)'}</span>
+                    </h1>
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                        <div className="flex items-center text-sm font-semibold text-[--brand-slate] bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full">
+                            <ClockIcon className="h-4 w-4 mr-1.5" />
+                            <span>{formatTime(elapsedTime)}</span>
+                        </div>
+                        {isSurvival ? (
+                             <div className="flex items-center text-sm font-semibold text-[--brand-slate] bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full">
+                                <TrophyIcon className="h-4 w-4 mr-1.5 text-yellow-500" />
+                                <span>{score} Survived</span>
+                            </div>
+                        ) : (
+                            <div className="text-sm font-semibold text-[--brand-slate] bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full">
+                                Step {pastSteps.length + 1} of {totalSteps}
+                            </div>
+                        )}
                     </div>
                 </div>
+                {!isSurvival && (
+                  <div className="w-full bg-black/10 dark:bg-white/10 rounded-full h-2" role="progressbar" aria-valuenow={pastSteps.length} aria-valuemin={0} aria-valuemax={totalSteps}>
+                      <div 
+                          className="bg-[--brand-purple] h-2 rounded-full transition-all duration-500" 
+                          style={{ width: `${progressPercentage}%` }}
+                      ></div>
+                  </div>
+                )}
             </div>
             
             {!currentStep ? <LoadingState message={loadingMessage} /> : (
             <div>
-                <div className="mb-6 p-4 bg-black/5 rounded-2xl border border-black/5 dark:bg-white/10 dark:border-white/10">
-                    <div className="flex items-start text-blue-700 dark:text-blue-300 mb-2">
+                <div className="mb-6 p-4 bg-purple-500/5 rounded-2xl border border-purple-500/10">
+                    <div className="flex items-start text-purple-700 dark:text-purple-300 mb-2">
                         <SparklesIcon className="h-5 w-5 mr-2 flex-shrink-0 mt-1"/>
                         <h3 className="text-lg font-semibold">Scenario</h3>
                     </div>
-                    <p className="text-[--brand-slate] dark:text-slate-300 leading-relaxed">{currentStep.scenario}</p>
+                    <p className="text-[--brand-slate] leading-relaxed">{currentStep.scenario}</p>
                 </div>
                 
                 <div>
-                    <p className="text-xl font-semibold text-[--brand-charcoal] dark:text-slate-200 mb-4">{currentStep.question}</p>
+                    <p className="text-xl font-semibold mb-4">{currentStep.question}</p>
                     <div className="space-y-4">
                         {currentStep.options.map((option, index) => (
                             <button
@@ -391,11 +407,11 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
                             disabled={isAnswered}
                             className={`w-full text-left p-4 rounded-2xl border border-black/10 dark:border-white/10 transition-all duration-300 flex items-start space-x-4 ${getOptionClasses(index)}`}
                             >
-                            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-black/10 dark:bg-white/20 flex items-center justify-center font-bold text-[--brand-charcoal] dark:text-slate-200">
+                            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-black/10 dark:bg-white/20 flex items-center justify-center font-bold">
                                 {String.fromCharCode(65 + index)}
                             </div>
                             <div className="flex-grow">
-                                <p className="font-semibold text-[--brand-charcoal] dark:text-slate-200">{option.text}</p>
+                                <p className="font-semibold">{option.text}</p>
                                 {isAnswered && selectedOptionIndex === index && (
                                 <p className={`mt-2 text-sm font-semibold ${option.isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                                     {option.feedback}
@@ -408,12 +424,12 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
 
                      <div className="mt-6">
                         {isHintVisible ? (
-                            <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 animate-chat-bubble-in">
+                            <div className="p-4 bg-yellow-500/10 rounded-2xl border border-yellow-500/20 animate-chat-bubble-in">
                                 <div className="flex items-start">
-                                    <SparklesIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 mt-0.5" />
+                                    <SparklesIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-3 flex-shrink-0 mt-0.5" />
                                     <div>
-                                        <h4 className="font-semibold text-blue-800 dark:text-blue-300">Hint</h4>
-                                        <p className="text-[--brand-slate] dark:text-slate-300 mt-1">{currentStep.aiAdvice}</p>
+                                        <h4 className="font-semibold text-yellow-800 dark:text-yellow-300">Hint</h4>
+                                        <p className="text-[--brand-slate] mt-1">{currentStep.aiAdvice}</p>
                                     </div>
                                 </div>
                             </div>
@@ -421,7 +437,7 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
                             <button
                                 onClick={() => setIsHintVisible(true)}
                                 disabled={isAnswered}
-                                className="w-full bg-black/5 text-[--brand-charcoal] font-bold py-3 px-4 rounded-xl hover:bg-black/10 transition-colors duration-300 flex items-center justify-center gap-2 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full bg-black/5 text-[--brand-text] font-bold py-3 px-4 rounded-2xl hover:bg-black/10 transition-colors duration-300 flex items-center justify-center gap-2 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <SparklesIcon className="h-5 w-5" />
                                 Get a Hint

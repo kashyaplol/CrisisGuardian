@@ -24,22 +24,24 @@ const saveAnalytics = async (data: AnalyticsData): Promise<void> => {
 
 export const updateAnalyticsOnDrillComplete = async (result: DrillResult): Promise<void> => {
   const data = await getAnalytics();
-  const { disasterType, score, totalQuestions } = result;
-
-  // Update overall stats
+  
+  // Update stats that apply to all modes
   data.totalDrillsCompleted += 1;
-  data.overallScoreSum += score;
-  data.overallQuestionSum += totalQuestions;
+  data.drillsByType[result.disasterType] = (data.drillsByType[result.disasterType] || 0) + 1;
 
-  // Update drills by type
-  data.drillsByType[disasterType] = (data.drillsByType[disasterType] || 0) + 1;
+  // Only update score-based analytics for Standard drills
+  if (result.mode === 'Standard' && result.score !== undefined && result.totalQuestions !== undefined) {
+    const { disasterType, score, totalQuestions } = result;
 
-  // Update scores by type
-  const typeScores = data.scoresByType[disasterType] || { scoreSum: 0, questionSum: 0, count: 0 };
-  typeScores.scoreSum += score;
-  typeScores.questionSum += totalQuestions;
-  typeScores.count += 1;
-  data.scoresByType[disasterType] = typeScores;
+    data.overallScoreSum += score;
+    data.overallQuestionSum += totalQuestions;
+
+    const typeScores = data.scoresByType[disasterType] || { scoreSum: 0, questionSum: 0, count: 0 };
+    typeScores.scoreSum += score;
+    typeScores.questionSum += totalQuestions;
+    typeScores.count += 1;
+    data.scoresByType[disasterType] = typeScores;
+  }
 
   await saveAnalytics(data);
 };

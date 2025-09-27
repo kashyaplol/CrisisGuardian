@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { DisasterType, DrillStep, DrillStepOption } from '../types';
+import { DisasterType, DrillStep, DrillStepOption, DrillMode } from '../types';
 
 
 if (!process.env.API_KEY) {
@@ -53,6 +53,7 @@ interface PreviousStepContext {
     scenario: string;
     question: string;
     userAnswer: DrillStepOption;
+    stepsSurvived?: number;
 }
 
 const VIDEO_LESSON_PROMPTS: Record<DisasterType, string> = {
@@ -103,19 +104,28 @@ const VIDEO_LESSON_PROMPTS: Record<DisasterType, string> = {
   `
 };
 
-export const generateDrillScenario = async (disasterType: DisasterType, region: string, previousStepContext?: PreviousStepContext): Promise<DrillStep | null> => {
+export const generateDrillScenario = async (disasterType: DisasterType, region: string, mode: DrillMode, previousStepContext?: PreviousStepContext): Promise<DrillStep | null> => {
   
   let prompt: string;
+  const studentFocus = "All scenarios and options must be easy for a school student in India to understand.";
 
   if (previousStepContext) {
-    const { scenario, question, userAnswer } = previousStepContext;
-    prompt = `This is a multi-step disaster drill for a ${disasterType} in a school in ${region}, India, from a student's perspective. 
-    The previous situation was: "${scenario}".
-    The question asked was: "${question}".
-    The user chose the action: "${userAnswer.text}", which was ${userAnswer.isCorrect ? 'correct' : 'incorrect'}. The feedback provided was: "${userAnswer.feedback}".
-    Now, generate a new, logical follow-up scenario that results from the user's previous action. Create a new multiple-choice question with three distinct options (one correct, two plausible but incorrect) about the immediate correct action in this new situation. Provide brief feedback for each option. Also, provide a short, concise hint related to this new scenario that helps the user determine the correct next step. Ensure the new scenario is a clear progression of the story.`;
-  } else {
-    prompt = `Generate a realistic, initial stage disaster scenario for a ${disasterType} in a school located in ${region}, India. The scenario should be focused on a student's perspective. Create one multiple-choice question with three options about the immediate correct action. One option must be correct, and the other two must be plausible but incorrect. Provide brief feedback for each option. Also, provide a short, concise hint to guide the user toward the correct action if they are stuck.`;
+    const { scenario, question, userAnswer, stepsSurvived } = previousStepContext;
+    if (mode === 'Survival') {
+       prompt = `This is a continuous SURVIVAL MODE disaster drill about a ${disasterType} in a school in ${region}, India. The user has correctly survived ${stepsSurvived} scenarios so far.
+       The previous situation was: "${scenario}".
+       The user correctly chose the action: "${userAnswer.text}".
+       Now, generate the NEXT logical follow-up scenario in this evolving story. The situation should become slightly more intense or complex, but still be a direct consequence of the previous events. Create a new question and three options (one correct, two incorrect). Ensure the entire scenario is from a student's perspective. ${studentFocus}`;
+    } else { // Standard Mode
+        prompt = `This is a multi-step standard disaster drill for a ${disasterType} in a school in ${region}, India.
+        The previous situation was: "${scenario}".
+        The question asked was: "${question}".
+        The user chose the action: "${userAnswer.text}", which was ${userAnswer.isCorrect ? 'correct' : 'incorrect'}. The feedback provided was: "${userAnswer.feedback}".
+        Now, generate a new, logical follow-up scenario that results from the user's previous action. Create a new multiple-choice question with three distinct options about the immediate correct action. ${studentFocus}`;
+    }
+  } else { // First step of any drill
+    const modeDescription = mode === 'Survival' ? 'This is the START of a continuous SURVIVAL MODE drill.' : 'This is the START of a standard, multi-step drill.';
+    prompt = `Generate a realistic, initial stage disaster scenario for a ${disasterType} in a school located in ${region}, India. ${modeDescription} The scenario should be focused on a student's perspective. Create one multiple-choice question with three options about the immediate correct action. One option must be correct, and the other two must be plausible but incorrect. Provide brief feedback for each option and a concise hint. ${studentFocus}`;
   }
 
   try {

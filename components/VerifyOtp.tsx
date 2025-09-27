@@ -77,20 +77,20 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified, otpHint }) 
   const buttonText = flow === 'signup' ? 'Verify & Sign Up' : 'Verify & Proceed';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-beige] dark:bg-[--dark-bg] p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-bg] dark:bg-[--dark-bg] p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
           <CrisisGuardianLogo className="justify-center" />
         </div>
         <div className="bg-white dark:bg-[--dark-surface] p-8 rounded-3xl soft-shadow">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-[--brand-charcoal] dark:text-white">{title}</h1>
-            <p className="text-[--brand-slate] dark:text-slate-400 mt-2">
-              {subTitle} <span className="font-semibold text-[--brand-charcoal] dark:text-slate-200">{email}</span>.
+            <h1 className="text-3xl font-bold">{title}</h1>
+            <p className="text-[--brand-slate] mt-2">
+              {subTitle} <span className="font-semibold text-[--brand-text] dark:text-slate-200">{email}</span>.
             </p>
             {showHint && otpHint && (
-              <p className="mt-4 p-3 bg-black/5 dark:bg-white/5 rounded-xl text-sm text-slate-500 dark:text-slate-400">
-                  (For testing, your code is: <span className="font-bold text-[--brand-charcoal] dark:text-white">{otpHint}</span>)
+              <p className="mt-4 p-3 bg-purple-500/5 dark:bg-white/5 rounded-xl text-sm text-[--brand-slate]">
+                  (For testing, your code is: <span className="font-bold text-[--brand-text] dark:text-white">{otpHint}</span>)
               </p>
             )}
           </div>
@@ -108,7 +108,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified, otpHint }) 
                   onKeyDown={e => handleKeyDown(e, index)}
                   onFocus={e => e.target.select()}
                   ref={el => { if (el) { inputsRef.current[index] = el; } }}
-                  className="w-12 h-14 text-center text-2xl font-semibold bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl transition-colors"
+                  className="w-12 h-14 text-center text-2xl font-semibold bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl transition-colors"
                 />
               ))}
             </div>
@@ -117,7 +117,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified, otpHint }) 
 
             <button
               type="submit"
-              className="w-full mt-6 bg-[--brand-orange] text-white font-bold py-4 px-4 rounded-2xl hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-1"
+              className="w-full mt-6 bg-[--brand-purple] text-white font-bold py-4 px-4 rounded-2xl hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-1"
             >
               {buttonText}
             </button>

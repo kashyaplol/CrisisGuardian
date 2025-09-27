@@ -34,20 +34,20 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onResetPassword }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-beige] dark:bg-[--dark-bg] p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-bg] dark:bg-[--dark-bg] p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
           <CrisisGuardianLogo className="justify-center" />
         </div>
         <div className="bg-white dark:bg-[--dark-surface] p-8 rounded-3xl soft-shadow">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-[--brand-charcoal] dark:text-white">Set New Password</h2>
-            <p className="text-[--brand-slate] dark:text-slate-400 mt-2">Create a new, secure password for your account.</p>
+            <h2 className="text-3xl font-bold">Set New Password</h2>
+            <p className="text-[--brand-slate] mt-2">Create a new, secure password for your account.</p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-[--brand-slate] mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -58,20 +58,20 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onResetPassword }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-12 py-3 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl transition-colors"
+                  className="w-full pl-12 pr-12 py-3 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl transition-colors"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-charcoal] dark:hover:text-white"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-text] dark:hover:text-white"
                 >
                   {isPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                 </button>
               </div>
             </div>
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">
+              <label htmlFor="confirm-password" className="block text-sm font-semibold text-[--brand-slate] mb-2">
                 Confirm New Password
               </label>
               <div className="relative">
@@ -82,13 +82,13 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onResetPassword }) => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-12 py-3 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl transition-colors"
+                  className="w-full pl-12 pr-12 py-3 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl transition-colors"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-charcoal] dark:hover:text-white"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-text] dark:hover:text-white"
                 >
                   {isConfirmPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                 </button>
@@ -100,7 +100,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onResetPassword }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[--brand-orange] text-white font-bold py-4 px-4 rounded-2xl hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full bg-[--brand-purple] text-white font-bold py-4 px-4 rounded-2xl hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <>

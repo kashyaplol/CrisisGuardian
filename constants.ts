@@ -1,6 +1,7 @@
-import { DisasterModule, DisasterType } from './types';
+import { DisasterModule, DisasterType, Achievement, AchievementId, AchievementTier } from './types';
 import { 
-  Avatar1Icon, Avatar2Icon, Avatar3Icon, Avatar4Icon 
+  Avatar1Icon, Avatar2Icon, Avatar3Icon, Avatar4Icon,
+  TrophyBronzeIcon, TrophySilverIcon, TrophyGoldIcon
 } from './components/icons/Icons';
 
 // --- Icon Data URLs (Representing WebP/Image format) ---
@@ -150,3 +151,17 @@ export const PRE_GENERATED_VIDEOS: Record<string, string> = {
     'Cyclone-cartoon': placeholderBase64Video,
     'Cyclone-realistic': placeholderBase64Video,
 };
+
+export const ACHIEVEMENTS_LIST: Achievement[] = [
+  { id: AchievementId.FirstDrill, name: 'First Steps', description: 'Complete your first virtual drill.', tier: AchievementTier.Bronze, icon: TrophyBronzeIcon },
+  { id: AchievementId.FiveDrills, name: 'Drill Enthusiast', description: 'Complete 5 virtual drills.', tier: AchievementTier.Silver, icon: TrophySilverIcon },
+  { id: AchievementId.TenDrills, name: 'Drill Sergeant', description: 'Complete 10 virtual drills.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.PerfectScore, name: 'Flawless Victory', description: 'Achieve a perfect score on any drill.', tier: AchievementTier.Silver, icon: TrophySilverIcon },
+  { id: AchievementId.HighAchiever, name: 'High Achiever', description: 'Maintain an average score above 90%.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.EarthquakeMaster, name: 'Quake Proof', description: 'Get a perfect score on a Hard Earthquake drill.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.FloodMaster, name: 'High and Dry', description: 'Get a perfect score on a Hard Flood drill.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.FireMaster, name: 'Fire Marshal', description: 'Get a perfect score on a Hard Fire drill.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.CycloneMaster, name: 'Storm Rider', description: 'Get a perfect score on a Hard Cyclone drill.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.ThreeDayStreak, name: 'Warming Up', description: 'Maintain a 3-day activity streak.', tier: AchievementTier.Bronze, icon: TrophyBronzeIcon },
+  { id: AchievementId.SevenDayStreak, name: 'On Fire', description: 'Maintain a 7-day activity streak.', tier: AchievementTier.Silver, icon: TrophySilverIcon },
+];

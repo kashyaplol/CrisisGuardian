@@ -35,20 +35,20 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onStartForgotPassword, 
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-beige] dark:bg-[--dark-bg] p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-bg] dark:bg-[--dark-bg] p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
           <CrisisGuardianLogo className="justify-center" />
         </div>
         <div className="bg-white dark:bg-[--dark-surface] p-8 rounded-3xl soft-shadow">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-[--brand-charcoal] dark:text-white">Reset Password</h2>
-            <p className="text-[--brand-slate] dark:text-slate-400 mt-2">Enter your email to receive a verification code.</p>
+            <h2 className="text-3xl font-bold">Reset Password</h2>
+            <p className="text-[--brand-slate] mt-2">Enter your email to receive a verification code.</p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-[--brand-slate] mb-2">
                 Email Address
               </label>
               <div className="relative">
@@ -59,7 +59,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onStartForgotPassword, 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-12 pr-4 py-3 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl transition-colors"
+                  className="w-full pl-12 pr-4 py-3 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl transition-colors"
                   required
                 />
               </div>
@@ -71,7 +71,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onStartForgotPassword, 
             <button
               type="submit"
               disabled={isLoading || !!message}
-              className="w-full bg-[--brand-orange] text-white font-bold py-4 px-4 rounded-2xl hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full bg-[--brand-purple] text-white font-bold py-4 px-4 rounded-2xl hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <>
@@ -84,9 +84,9 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onStartForgotPassword, 
             </button>
           </form>
         </div>
-        <p className="text-center text-sm text-[--brand-slate] dark:text-slate-400 mt-8">
+        <p className="text-center text-sm text-[--brand-slate] mt-8">
           Remembered your password?{' '}
-          <button onClick={() => setView('login')} className="font-bold text-[--brand-orange] hover:underline">
+          <button onClick={() => setView('login')} className="font-bold text-[--brand-purple] hover:underline">
             Back to Login
           </button>
         </p>

@@ -44,20 +44,20 @@ const Login: React.FC<LoginProps> = ({ onLogin, setView }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-beige] dark:bg-[--dark-bg] p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[--brand-bg] dark:bg-[--dark-bg] p-6">
       <div className="w-full max-w-md">
           <div className="text-center mb-10">
               <CrisisGuardianLogo className="justify-center" />
           </div>
           <div className="bg-white dark:bg-[--dark-surface] p-8 rounded-3xl soft-shadow">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-[--brand-charcoal] dark:text-white">Welcome Back!</h2>
-              <p className="text-[--brand-slate] dark:text-slate-400 mt-2">Log in to your account.</p>
+              <h2 className="text-3xl font-bold">Welcome Back!</h2>
+              <p className="text-[--brand-slate] mt-2">Log in to your account.</p>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-[--brand-slate] mb-2">
                   Email Address
                 </label>
                 <div className="relative">
@@ -68,13 +68,13 @@ const Login: React.FC<LoginProps> = ({ onLogin, setView }) => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full pl-12 pr-4 py-3 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl transition-colors"
+                      className="w-full pl-12 pr-4 py-3 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl transition-colors"
                       required
                     />
                 </div>
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-[--brand-slate] dark:text-slate-300 mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-[--brand-slate] mb-2">
                   Password
                 </label>
                 <div className="relative">
@@ -85,13 +85,13 @@ const Login: React.FC<LoginProps> = ({ onLogin, setView }) => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-12 pr-12 py-3 bg-black/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-orange] focus:ring-0 rounded-2xl transition-colors"
+                      className="w-full pl-12 pr-12 py-3 bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl transition-colors"
                       required
                     />
                     <button
                         type="button"
                         onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-charcoal] dark:hover:text-white"
+                        className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-[--brand-text] dark:hover:text-white"
                         aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
                     >
                         {isPasswordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
@@ -103,7 +103,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, setView }) => {
                   <button
                       type="button"
                       onClick={() => setView('forgotPassword')}
-                      className="text-sm font-semibold text-[--brand-orange] hover:underline"
+                      className="text-sm font-semibold text-[--brand-purple] hover:underline"
                   >
                       Forgot password?
                   </button>
@@ -114,7 +114,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, setView }) => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[--brand-orange] text-white font-bold py-4 px-4 rounded-2xl hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full bg-[--brand-purple] text-white font-bold py-4 px-4 rounded-2xl hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-1 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isLoading ? (
                     <>
@@ -127,29 +127,29 @@ const Login: React.FC<LoginProps> = ({ onLogin, setView }) => {
               </button>
             </form>
 
-            <div className="mt-6 p-4 bg-black/5 dark:bg-white/5 rounded-2xl">
-                <h4 className="text-sm font-semibold text-center text-[--brand-slate] dark:text-slate-400 mb-3">For Testing & Demo</h4>
+            <div className="mt-6 p-4 bg-purple-500/5 dark:bg-white/5 rounded-2xl">
+                <h4 className="text-sm font-semibold text-center text-[--brand-slate] mb-3">For Testing & Demo</h4>
                 <div className="flex flex-col sm:flex-row gap-2">
                     <button
                     type="button"
                     onClick={() => handleTestLogin('student')}
-                    className="w-full text-sm bg-white dark:bg-[--dark-surface] border-2 border-black/10 dark:border-white/10 text-[--brand-charcoal] dark:text-white font-bold py-2 px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    className="w-full text-sm bg-white dark:bg-[--dark-surface] border-2 border-black/5 dark:border-white/10 font-bold py-2 px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                     >
                     Login as Student
                     </button>
                     <button
                     type="button"
                     onClick={() => handleTestLogin('admin')}
-                    className="w-full text-sm bg-white dark:bg-[--dark-surface] border-2 border-black/10 dark:border-white/10 text-[--brand-charcoal] dark:text-white font-bold py-2 px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    className="w-full text-sm bg-white dark:bg-[--dark-surface] border-2 border-black/5 dark:border-white/10 font-bold py-2 px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                     >
                     Login as Admin
                     </button>
                 </div>
             </div>
         </div>
-         <p className="text-center text-sm text-[--brand-slate] dark:text-slate-400 mt-8">
+         <p className="text-center text-sm text-[--brand-slate] mt-8">
             Don't have an account?{' '}
-            <button onClick={() => setView('signup')} className="font-bold text-[--brand-orange] hover:underline">
+            <button onClick={() => setView('signup')} className="font-bold text-[--brand-purple] hover:underline">
                 Sign Up
             </button>
         </p>
