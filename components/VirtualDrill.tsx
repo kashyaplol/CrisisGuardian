@@ -59,9 +59,9 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
   const totalSteps = useMemo(() => {
     if (isSurvival) return Infinity;
     switch (difficulty) {
-        case Difficulty.Easy: return 1;
-        case Difficulty.Medium: return 2;
-        case Difficulty.Hard: return 3;
+        case Difficulty.Easy: return 4;
+        case Difficulty.Medium: return 7;
+        case Difficulty.Hard: return 10;
         default: return 1;
     }
   }, [difficulty, isSurvival]);
@@ -354,99 +354,81 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
             </>
         )}
 
-        <div className={`bg-white dark:bg-[--dark-surface] p-6 sm:p-8 rounded-3xl soft-shadow relative z-10 ${animationClass}`}>
-            <div className="border-b border-black/10 dark:border-white/10 pb-4 mb-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl sm:text-3xl font-bold">
-                        <span className="text-[--brand-purple]">{disasterType} Drill {isSurvival && '(Survival)'}</span>
-                    </h1>
-                    <div className="flex items-center space-x-2 sm:space-x-4">
-                        <div className="flex items-center text-sm font-semibold text-[--brand-slate] bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full">
-                            <ClockIcon className="h-4 w-4 mr-1.5" />
+        <div className={`bg-white/80 dark:bg-[--dark-surface]/80 backdrop-blur-md rounded-3xl soft-shadow p-6 sm:p-8 relative z-10 transition-transform duration-500 ${animationClass}`}>
+          {currentStep && (
+            <>
+                <div className="mb-6">
+                    <div className="flex justify-between items-center mb-4 text-sm font-semibold">
+                        {isSurvival ? (
+                            <div className="flex items-center gap-2 bg-yellow-500/10 text-yellow-700 dark:text-yellow-200 px-3 py-1 rounded-full">
+                                <TrophyIcon className="h-4 w-4" />
+                                <span>Steps Survived: {score}</span>
+                            </div>
+                        ) : (
+                             <span className="text-[--brand-slate]">Step {pastSteps.length + 1} of {totalSteps}</span>
+                        )}
+                        <div className="flex items-center gap-2 text-[--brand-slate]">
+                            <ClockIcon className="h-5 w-5" />
                             <span>{formatTime(elapsedTime)}</span>
                         </div>
-                        {isSurvival ? (
-                             <div className="flex items-center text-sm font-semibold text-[--brand-slate] bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full">
-                                <TrophyIcon className="h-4 w-4 mr-1.5 text-yellow-500" />
-                                <span>{score} Survived</span>
-                            </div>
-                        ) : (
-                            <div className="text-sm font-semibold text-[--brand-slate] bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full">
-                                Step {pastSteps.length + 1} of {totalSteps}
-                            </div>
-                        )}
                     </div>
-                </div>
-                {!isSurvival && (
-                  <div className="w-full bg-black/10 dark:bg-white/10 rounded-full h-2" role="progressbar" aria-valuenow={pastSteps.length} aria-valuemin={0} aria-valuemax={totalSteps}>
-                      <div 
-                          className="bg-[--brand-purple] h-2 rounded-full transition-all duration-500" 
-                          style={{ width: `${progressPercentage}%` }}
-                      ></div>
-                  </div>
-                )}
-            </div>
-            
-            {!currentStep ? <LoadingState message={loadingMessage} /> : (
-            <div>
-                <div className="mb-6 p-4 bg-purple-500/5 rounded-2xl border border-purple-500/10">
-                    <div className="flex items-start text-purple-700 dark:text-purple-300 mb-2">
-                        <SparklesIcon className="h-5 w-5 mr-2 flex-shrink-0 mt-1"/>
-                        <h3 className="text-lg font-semibold">Scenario</h3>
-                    </div>
-                    <p className="text-[--brand-slate] leading-relaxed">{currentStep.scenario}</p>
+                    {!isSurvival && (
+                        <div className="w-full bg-black/10 dark:bg-white/10 rounded-full h-2.5">
+                            <div className="bg-[--brand-purple] h-2.5 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }}></div>
+                        </div>
+                    )}
                 </div>
                 
-                <div>
-                    <p className="text-xl font-semibold mb-4">{currentStep.question}</p>
-                    <div className="space-y-4">
-                        {currentStep.options.map((option, index) => (
+                <div className="bg-purple-500/5 dark:bg-white/5 p-4 sm:p-6 rounded-2xl mb-6 border border-purple-500/10">
+                    <p className="text-base sm:text-lg leading-relaxed text-[--brand-slate] animate-chat-bubble-in">{currentStep.scenario}</p>
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-bold mb-6 font-heading">{currentStep.question}</h2>
+
+                <div className="grid grid-cols-1 gap-4">
+                    {currentStep.options.map((option, index) => (
+                        <div key={index} className="relative animate-fade-in-up" style={{ animationDelay: `${index * 100}ms`}}>
                             <button
-                            key={index}
-                            onClick={() => handleOptionSelect(index)}
-                            disabled={isAnswered}
-                            className={`w-full text-left p-4 rounded-2xl border border-black/10 dark:border-white/10 transition-all duration-300 flex items-start space-x-4 ${getOptionClasses(index)}`}
+                                onClick={() => handleOptionSelect(index)}
+                                disabled={isAnswered}
+                                className={`w-full text-left p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300 flex items-start ${getOptionClasses(index)} ${!isAnswered ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                             >
-                            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-black/10 dark:bg-white/20 flex items-center justify-center font-bold">
-                                {String.fromCharCode(65 + index)}
-                            </div>
-                            <div className="flex-grow">
-                                <p className="font-semibold">{option.text}</p>
-                                {isAnswered && selectedOptionIndex === index && (
-                                <p className={`mt-2 text-sm font-semibold ${option.isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                                <span className="text-lg font-bold mr-4 text-[--brand-purple]">
+                                    {String.fromCharCode(65 + index)}
+                                </span>
+                                <span className="flex-1 font-semibold">{option.text}</span>
+                                {isAnswered && (
+                                    <span className="ml-4">
+                                        {option.isCorrect ? <CheckCircleIcon className="h-6 w-6 text-green-500" /> : <XCircleIcon className="h-6 w-6 text-red-500" />}
+                                    </span>
+                                )}
+                            </button>
+                             {isAnswered && (
+                                <p className={`mt-2 text-sm px-5 transition-all duration-500 overflow-hidden ${selectedOptionIndex === index || option.isCorrect ? 'max-h-40' : 'max-h-0'}`}>
                                     {option.feedback}
                                 </p>
-                                )}
-                            </div>
-                            </button>
-                        ))}
-                    </div>
-
-                     <div className="mt-6">
-                        {isHintVisible ? (
-                            <div className="p-4 bg-yellow-500/10 rounded-2xl border border-yellow-500/20 animate-chat-bubble-in">
-                                <div className="flex items-start">
-                                    <SparklesIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-3 flex-shrink-0 mt-0.5" />
-                                    <div>
-                                        <h4 className="font-semibold text-yellow-800 dark:text-yellow-300">Hint</h4>
-                                        <p className="text-[--brand-slate] mt-1">{currentStep.aiAdvice}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => setIsHintVisible(true)}
-                                disabled={isAnswered}
-                                className="w-full bg-black/5 text-[--brand-text] font-bold py-3 px-4 rounded-2xl hover:bg-black/10 transition-colors duration-300 flex items-center justify-center gap-2 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <SparklesIcon className="h-5 w-5" />
-                                Get a Hint
-                            </button>
-                        )}
-                    </div>
+                             )}
+                        </div>
+                    ))}
                 </div>
-            </div>
-            )}
+
+                <div className="mt-8 text-center">
+                    <button 
+                        onClick={() => setIsHintVisible(!isHintVisible)}
+                        className="flex items-center gap-2 mx-auto text-sm font-semibold text-[--brand-purple] hover:text-purple-800 dark:hover:text-purple-300 transition-colors"
+                    >
+                        <SparklesIcon className="h-5 w-5"/>
+                        Need a hint?
+                    </button>
+                    {isHintVisible && (
+                        <div className="mt-4 p-4 bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 rounded-2xl animate-fade-in-up">
+                            <p className="font-semibold">AI Advisor says:</p>
+                            <p>{currentStep.aiAdvice}</p>
+                        </div>
+                    )}
+                </div>
+            </>
+          )}
         </div>
     </div>
   );

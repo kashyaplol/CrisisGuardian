@@ -150,19 +150,19 @@ const DrillsLobby: React.FC<DrillsLobbyProps> = ({ onStartDrill }) => {
                             <div className="space-y-4">
                                 <DifficultyCard 
                                     difficulty={Difficulty.Easy} 
-                                    description="1 Step Scenario" 
+                                    description="4 Step Scenario" 
                                     selected={selectedDifficulty === Difficulty.Easy} 
                                     onSelect={() => setSelectedDifficulty(Difficulty.Easy)} 
                                 />
                                 <DifficultyCard 
                                     difficulty={Difficulty.Medium} 
-                                    description="2 Step Scenario" 
+                                    description="7 Step Scenario" 
                                     selected={selectedDifficulty === Difficulty.Medium} 
                                     onSelect={() => setSelectedDifficulty(Difficulty.Medium)} 
                                 />
                                 <DifficultyCard 
                                     difficulty={Difficulty.Hard} 
-                                    description="3 Step Scenario" 
+                                    description="10 Step Scenario" 
                                     selected={selectedDifficulty === Difficulty.Hard} 
                                     onSelect={() => setSelectedDifficulty(Difficulty.Hard)} 
                                 />

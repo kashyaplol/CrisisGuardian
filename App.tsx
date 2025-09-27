@@ -154,6 +154,8 @@ const App: React.FC = () => {
                 drillHistory: [],
                 xp: 0,
                 level: 1,
+// FIX: Add missing 'trophies' property for new user creation.
+                trophies: 0,
                 streak: { count: 0, lastActivityDate: null },
                 unlockedAchievements: [],
             };

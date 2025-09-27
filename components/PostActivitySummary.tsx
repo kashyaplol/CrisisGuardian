@@ -49,7 +49,7 @@ const AnimatedXpBar: React.FC<{
 
 
 const PostActivitySummary: React.FC<PostActivitySummaryProps> = ({ summary, user, onClose }) => {
-  const { xpGained, leveledUp, newLevel, oldXp, newXp, newlyUnlocked, streakUpdated, newStreak, mode, score, totalQuestions, stepsSurvived } = summary;
+  const { xpGained, leveledUp, newLevel, oldXp, newXp, newlyUnlocked, streakUpdated, newStreak, mode, score, totalQuestions, stepsSurvived, trophiesGained } = summary;
   const isSurvival = mode === 'Survival';
 
   return (
@@ -96,6 +96,17 @@ const PostActivitySummary: React.FC<PostActivitySummaryProps> = ({ summary, user
                         <AnimatedXpBar oldXp={oldXp} newXp={newXp} level={newLevel} />
                     </div>
                 </div>
+
+                {/* Trophies Gained */}
+                {trophiesGained > 0 && (
+                     <div className="flex items-center gap-4 bg-purple-500/10 dark:bg-purple-500/20 p-4 rounded-2xl">
+                        <TrophyIcon className="h-10 w-10 text-[--brand-purple]"/>
+                        <div>
+                            <p className="text-xl font-bold">+{trophiesGained} Trophies</p>
+                            <p className="text-[--brand-slate] text-sm">Well done!</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Streak Update */}
                 {streakUpdated && newStreak > 0 && (

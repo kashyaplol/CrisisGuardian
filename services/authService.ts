@@ -104,12 +104,13 @@ export const seedInitialUsers = async () => {
         drillHistory: [],
         xp: 1250,
         level: 4,
+        trophies: 25,
         streak: { count: 3, lastActivityDate: new Date(Date.now() - 86400000).toISOString() },
         unlockedAchievements: [],
     };
 
-    // If user doesn't exist or is missing new properties (like streak), create/overwrite it.
-    if (!users[studentEmail] || !users[studentEmail].streak) {
+    // If user doesn't exist or is missing new properties, create/overwrite it.
+    if (!users[studentEmail] || users[studentEmail].trophies === undefined) {
         users[studentEmail] = studentData;
         usersModified = true;
     }
@@ -127,12 +128,13 @@ export const seedInitialUsers = async () => {
         drillHistory: [],
         xp: 0,
         level: 1,
+        trophies: 0,
         streak: { count: 0, lastActivityDate: null },
         unlockedAchievements: [],
     };
     
     // If user doesn't exist or is missing new properties, create/overwrite it.
-    if (!users[adminEmail] || !users[adminEmail].streak) {
+    if (!users[adminEmail] || users[adminEmail].trophies === undefined) {
         users[adminEmail] = adminData;
         usersModified = true;
     }
@@ -157,7 +159,7 @@ export const createUser = async (user: User): Promise<boolean> => {
     return false;
   }
   // Ensure the canonical user object also has the lowercase email.
-  users[email] = { ...user, email };
+  users[email] = { ...user, email, trophies: 0 };
   await saveUsers(users);
   return true;
 };

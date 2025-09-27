@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { User, UserRole, View, DrillResult, Difficulty, AchievementId } from '../types';
-import { UserCircleIcon, PencilIcon, CameraIcon, XCircleIcon, ShieldCheckIcon, AcademicCapIcon, BookOpenIcon, ArrowUturnLeftIcon, LogoutIcon, MapPinIcon, FireIcon } from './icons/Icons';
+import { UserCircleIcon, PencilIcon, CameraIcon, XCircleIcon, ShieldCheckIcon, AcademicCapIcon, BookOpenIcon, ArrowUturnLeftIcon, LogoutIcon, MapPinIcon, FireIcon, TrophyIcon } from './icons/Icons';
 import { DEFAULT_AVATARS, INDIAN_STATES, ACHIEVEMENTS_LIST } from '../constants';
 import { getXpForLevel } from '../services/progressionService';
 
@@ -314,19 +314,26 @@ const Profile: React.FC<ProfileProps> = ({ user, setUser, setView, onLogout, reg
         </div>
 
         <div className="bg-white dark:bg-[--dark-surface] rounded-3xl soft-shadow p-6 sm:p-8">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div className="flex-grow">
-                    <XpProgress user={user} />
-                </div>
-                {user.streak.count > 0 && (
-                     <div className="flex items-center gap-4 bg-yellow-500/10 dark:bg-yellow-500/20 p-4 rounded-2xl">
-                        <FireIcon className="h-12 w-12 text-yellow-500"/>
+            <div className="space-y-6">
+                <XpProgress user={user} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                     <div className="flex items-center gap-4 bg-purple-500/10 dark:bg-purple-500/20 p-4 rounded-2xl">
+                        <TrophyIcon className="h-10 w-10 text-[--brand-purple]"/>
                         <div>
-                            <p className="text-2xl font-bold">{user.streak.count}-Day Streak</p>
-                            <p className="text-[--brand-slate] text-sm">Keep it going by completing a drill each day!</p>
+                            <p className="text-2xl font-bold">{user.trophies || 0}</p>
+                            <p className="text-[--brand-slate] text-sm">Trophies Earned</p>
                         </div>
                     </div>
-                )}
+                    {user.streak.count > 0 && (
+                        <div className="flex items-center gap-4 bg-yellow-500/10 dark:bg-yellow-500/20 p-4 rounded-2xl">
+                            <FireIcon className="h-10 w-10 text-yellow-500"/>
+                            <div>
+                                <p className="text-2xl font-bold">{user.streak.count}-Day Streak</p>
+                                <p className="text-[--brand-slate] text-sm">Keep it going!</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
         

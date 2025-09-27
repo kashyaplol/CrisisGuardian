@@ -7,8 +7,8 @@ const XP_PER_CORRECT_ANSWER = 25;
 const XP_PERFECT_SCORE_BONUS = 50;
 const XP_DIFFICULTY_MULTIPLIER: Record<Difficulty, number> = {
     [Difficulty.Easy]: 1,
-    [Difficulty.Medium]: 1.25,
-    [Difficulty.Hard]: 1.5,
+    [Difficulty.Medium]: 1.5,
+    [Difficulty.Hard]: 2.0,
 };
 const XP_PER_SURVIVAL_STEP = 50;
 const XP_SURVIVAL_MILESTONE_BONUS = 100; // Bonus every 5 steps
@@ -35,9 +35,10 @@ export const processActivityCompletion = (
 
     const oldUser = { ...user };
     let xpGained = 0;
+    let trophiesGained = 0;
     const { details: drillDetails } = activity;
 
-    // 1. Calculate XP from the activity
+    // 1. Calculate XP and Trophies from the activity
     if (drillDetails.mode === 'Survival') {
         const steps = drillDetails.stepsSurvived || 0;
         xpGained += steps * XP_PER_SURVIVAL_STEP;
@@ -55,13 +56,20 @@ export const processActivityCompletion = (
             }
             xpGained *= XP_DIFFICULTY_MULTIPLIER[difficulty];
         }
+        
+        switch (difficulty) {
+            case Difficulty.Easy: trophiesGained = 2; break;
+            case Difficulty.Medium: trophiesGained = 5; break;
+            case Difficulty.Hard: trophiesGained = 10; break;
+        }
     }
     
     xpGained = Math.round(xpGained);
     const newXp = user.xp + xpGained;
 
-    // 2. Update user history and drill-related stats
+    // 2. Update user history and stats
     user.drillHistory.push(drillDetails);
+    user.trophies = (user.trophies || 0) + trophiesGained;
 
     // Recalculate average score *only based on standard drills*
     const standardDrills = user.drillHistory.filter(d => d.mode === 'Standard' && d.score !== undefined && d.totalQuestions !== undefined && d.totalQuestions > 0);
@@ -113,6 +121,8 @@ export const processActivityCompletion = (
                 case AchievementId.FirstDrill: unlocked = user.drillHistory.length >= 1; break;
                 case AchievementId.FiveDrills: unlocked = user.drillHistory.length >= 5; break;
                 case AchievementId.TenDrills: unlocked = user.drillHistory.length >= 10; break;
+                case AchievementId.TwentyFiveDrills: unlocked = user.drillHistory.length >= 25; break;
+                case AchievementId.FiftyDrills: unlocked = user.drillHistory.length >= 50; break;
                 // Score based
                 case AchievementId.PerfectScore: unlocked = drillDetails.mode === 'Standard' && drillDetails.score === drillDetails.totalQuestions; break;
                 case AchievementId.HighAchiever: unlocked = user.score > 90; break;
@@ -121,9 +131,16 @@ export const processActivityCompletion = (
                 case AchievementId.FloodMaster: unlocked = isDisasterMaster(user, DisasterType.Flood); break;
                 case AchievementId.FireMaster: unlocked = isDisasterMaster(user, DisasterType.Fire); break;
                 case AchievementId.CycloneMaster: unlocked = isDisasterMaster(user, DisasterType.Cyclone); break;
+                case AchievementId.AllRounder: unlocked = isAllRounder(user); break;
                 // Streaks
                 case AchievementId.ThreeDayStreak: unlocked = user.streak.count >= 3; break;
                 case AchievementId.SevenDayStreak: unlocked = user.streak.count >= 7; break;
+                case AchievementId.FourteenDayStreak: unlocked = user.streak.count >= 14; break;
+                case AchievementId.ThirtyDayStreak: unlocked = user.streak.count >= 30; break;
+                // Survival Mode
+                case AchievementId.SurvivalFive: unlocked = drillDetails.mode === 'Survival' && (drillDetails.stepsSurvived || 0) >= 5; break;
+                case AchievementId.SurvivalTen: unlocked = drillDetails.mode === 'Survival' && (drillDetails.stepsSurvived || 0) >= 10; break;
+                case AchievementId.SurvivalTwenty: unlocked = drillDetails.mode === 'Survival' && (drillDetails.stepsSurvived || 0) >= 20; break;
             }
 
             if (unlocked) {
@@ -143,6 +160,7 @@ export const processActivityCompletion = (
         newLevel: newLevelInfo.level,
         oldXp: oldUser.xp,
         newXp: user.xp,
+        trophiesGained,
         newlyUnlocked,
         streakUpdated,
         newStreak: user.streak.count,
@@ -162,5 +180,19 @@ const isDisasterMaster = (user: User, disasterType: DisasterType): boolean => {
         drill.disasterType === disasterType &&
         drill.difficulty === Difficulty.Hard &&
         drill.score === drill.totalQuestions
+    );
+};
+
+// Helper function to check for All-Rounder mastery
+const isAllRounder = (user: User): boolean => {
+    const disasterTypes: DisasterType[] = [
+        DisasterType.Earthquake,
+        DisasterType.Flood,
+        DisasterType.Fire,
+        DisasterType.Cyclone,
+    ];
+
+    return disasterTypes.every(type =>
+        isDisasterMaster(user, type)
     );
 };

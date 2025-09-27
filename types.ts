@@ -38,6 +38,7 @@ export interface User {
   // New Progression Fields
   xp: number;
   level: number;
+  trophies: number;
   streak: {
     count: number;
     lastActivityDate: string | null; // ISO Date string
@@ -104,6 +105,8 @@ export enum AchievementId {
   FirstDrill = 'FIRST_DRILL',
   FiveDrills = 'FIVE_DRILLS',
   TenDrills = 'TEN_DRILLS',
+  TwentyFiveDrills = 'TWENTY_FIVE_DRILLS',
+  FiftyDrills = 'FIFTY_DRILLS',
   // Score-based
   PerfectScore = 'PERFECT_SCORE',
   HighAchiever = 'HIGH_ACHIEVER', // >90% avg score
@@ -112,9 +115,16 @@ export enum AchievementId {
   FloodMaster = 'FLOOD_MASTER',
   FireMaster = 'FIRE_MASTER',
   CycloneMaster = 'CYCLONE_MASTER',
+  AllRounder = 'ALL_ROUNDER', // Perfect on Hard for all types
   // Streaks
   ThreeDayStreak = 'THREE_DAY_STREAK',
   SevenDayStreak = 'SEVEN_DAY_STREAK',
+  FourteenDayStreak = 'FOURTEEN_DAY_STREAK',
+  ThirtyDayStreak = 'THIRTY_DAY_STREAK',
+  // Survival Mode
+  SurvivalFive = 'SURVIVAL_FIVE',
+  SurvivalTen = 'SURVIVAL_TEN',
+  SurvivalTwenty = 'SURVIVAL_TWENTY',
   // Learning
   KnowledgeSeeker = 'KNOWLEDGE_SEEKER', // Study all modules (not yet implemented)
 }
@@ -140,6 +150,7 @@ export interface ProgressionSummary {
     newLevel: number;
     oldXp: number;
     newXp: number;
+    trophiesGained: number;
     newlyUnlocked: Achievement[];
     streakUpdated: boolean;
     newStreak: number;

@@ -153,15 +153,30 @@ export const PRE_GENERATED_VIDEOS: Record<string, string> = {
 };
 
 export const ACHIEVEMENTS_LIST: Achievement[] = [
+  // Drill Completion
   { id: AchievementId.FirstDrill, name: 'First Steps', description: 'Complete your first virtual drill.', tier: AchievementTier.Bronze, icon: TrophyBronzeIcon },
   { id: AchievementId.FiveDrills, name: 'Drill Enthusiast', description: 'Complete 5 virtual drills.', tier: AchievementTier.Silver, icon: TrophySilverIcon },
   { id: AchievementId.TenDrills, name: 'Drill Sergeant', description: 'Complete 10 virtual drills.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.TwentyFiveDrills, name: 'Drill Veteran', description: 'Complete 25 virtual drills.', tier: AchievementTier.Silver, icon: TrophySilverIcon },
+  { id: AchievementId.FiftyDrills, name: 'Guardian Legend', description: 'Complete 50 virtual drills.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  // Score-based
   { id: AchievementId.PerfectScore, name: 'Flawless Victory', description: 'Achieve a perfect score on any drill.', tier: AchievementTier.Silver, icon: TrophySilverIcon },
   { id: AchievementId.HighAchiever, name: 'High Achiever', description: 'Maintain an average score above 90%.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  // Disaster Specific
   { id: AchievementId.EarthquakeMaster, name: 'Quake Proof', description: 'Get a perfect score on a Hard Earthquake drill.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
   { id: AchievementId.FloodMaster, name: 'High and Dry', description: 'Get a perfect score on a Hard Flood drill.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
   { id: AchievementId.FireMaster, name: 'Fire Marshal', description: 'Get a perfect score on a Hard Fire drill.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
   { id: AchievementId.CycloneMaster, name: 'Storm Rider', description: 'Get a perfect score on a Hard Cyclone drill.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.AllRounder, name: 'All-Rounder', description: 'Get a perfect score on a Hard drill for every disaster type.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  // Streaks
   { id: AchievementId.ThreeDayStreak, name: 'Warming Up', description: 'Maintain a 3-day activity streak.', tier: AchievementTier.Bronze, icon: TrophyBronzeIcon },
   { id: AchievementId.SevenDayStreak, name: 'On Fire', description: 'Maintain a 7-day activity streak.', tier: AchievementTier.Silver, icon: TrophySilverIcon },
+  { id: AchievementId.FourteenDayStreak, name: 'Committed', description: 'Maintain a 14-day activity streak.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  { id: AchievementId.ThirtyDayStreak, name: 'Unstoppable', description: 'Maintain a 30-day activity streak.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  // Survival Mode
+  { id: AchievementId.SurvivalFive, name: 'Survivor', description: 'Survive 5 steps in Survival Mode.', tier: AchievementTier.Bronze, icon: TrophyBronzeIcon },
+  { id: AchievementId.SurvivalTen, name: 'Veteran Survivor', description: 'Survive 10 steps in Survival Mode.', tier: AchievementTier.Silver, icon: TrophySilverIcon },
+  { id: AchievementId.SurvivalTwenty, name: 'Ultimate Survivor', description: 'Survive 20 steps in Survival Mode.', tier: AchievementTier.Gold, icon: TrophyGoldIcon },
+  // Learning
+  { id: AchievementId.KnowledgeSeeker, name: 'Knowledge Seeker', description: 'Study all disaster modules.', tier: AchievementTier.Bronze, icon: TrophyBronzeIcon },
 ];

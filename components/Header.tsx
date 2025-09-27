@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, User, UserRole, Theme } from '../types';
 import { DEFAULT_AVATARS } from '../constants';
-import { CrisisGuardianLogo, UserCircleIcon, SunIcon, MoonIcon, Bars3Icon, XMarkIcon, FireIcon } from './icons/Icons';
+import { CrisisGuardianLogo, UserCircleIcon, SunIcon, MoonIcon, Bars3Icon, XMarkIcon, FireIcon, TrophyIcon } from './icons/Icons';
 import { getXpForLevel } from '../services/progressionService';
 
 interface HeaderProps {
@@ -83,10 +83,10 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, togg
       return user?.role === item.requiredRole;
   });
   
-  const handleNavClick = (view: View) => {
+  const handleNavClick = useCallback((view: View) => {
       setView(view);
       setIsSidebarOpen(false);
-  };
+  }, [setView, setIsSidebarOpen]);
   
   const headerClasses = `sticky top-0 z-40 transition-all duration-300 ${
     scrolled ? 'bg-[--brand-bg]/80 dark:bg-[--dark-bg]/80 backdrop-blur-md shadow-md' : 'bg-transparent'
@@ -122,6 +122,10 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, togg
             <div className="flex-1 flex items-center justify-end">
                 {/* Desktop Controls */}
                 <div className="hidden md:flex items-center space-x-2">
+                     <div className="flex items-center gap-1 text-[--brand-text] dark:text-slate-200 font-bold text-sm bg-purple-500/10 dark:bg-purple-500/20 px-3 py-1.5 rounded-full">
+                        <TrophyIcon className="h-5 w-5 text-[--brand-purple]" />
+                        <span>{user.trophies || 0}</span>
+                    </div>
                     {user.streak.count > 0 && (
                         <div className="flex items-center gap-1 text-[--brand-purple] font-bold text-sm bg-purple-500/10 dark:bg-purple-500/20 px-3 py-1.5 rounded-full">
                             <FireIcon className="h-5 w-5" />
@@ -201,14 +205,20 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, togg
                          </div>
                     </div>
                     <div className="mt-3 px-1">
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-white">Level {user.level}</span>
-                             {user.streak.count > 0 && (
-                                <div className="flex items-center gap-1 text-[--brand-yellow] font-bold text-xs">
-                                    <FireIcon className="h-4 w-4" />
-                                    <span>{user.streak.count} Day Streak</span>
+                        <div className="flex justify-between items-center mb-1 text-xs">
+                             <span className="font-bold text-white">Level {user.level}</span>
+                             <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1 text-slate-300 font-bold">
+                                    <TrophyIcon className="h-4 w-4 text-slate-300" />
+                                    <span>{user.trophies || 0}</span>
                                 </div>
-                            )}
+                                {user.streak.count > 0 && (
+                                    <div className="flex items-center gap-1 text-[--brand-yellow] font-bold">
+                                        <FireIcon className="h-4 w-4" />
+                                        <span>{user.streak.count}</span>
+                                    </div>
+                                )}
+                             </div>
                         </div>
                         <XpBar user={user} />
                     </div>
