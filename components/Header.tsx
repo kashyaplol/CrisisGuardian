@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, User, UserRole } from '../types';
+import { View, User, UserRole, Theme } from '../types';
 import { DEFAULT_AVATARS } from '../constants';
 import { CrisisGuardianLogo, UserCircleIcon, SunIcon, MoonIcon, Bars3Icon, XMarkIcon } from './icons/Icons';
 
@@ -7,6 +7,8 @@ interface HeaderProps {
   currentView: View;
   setView: (view: View) => void;
   user: User;
+  theme: Theme;
+  toggleTheme: () => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
@@ -38,7 +40,7 @@ const Avatar: React.FC<{ avatar: string; className?: string }> = ({ avatar, clas
 };
 
 
-const Header: React.FC<HeaderProps> = ({ currentView, setView, user, isSidebarOpen, setIsSidebarOpen }) => {
+const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, toggleTheme, isSidebarOpen, setIsSidebarOpen }) => {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -100,6 +102,13 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, isSidebarOp
             <div className="flex-1 flex items-center justify-end">
                 {/* Desktop Controls */}
                 <div className="hidden md:flex items-center space-x-2">
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-full text-[--brand-slate] dark:text-slate-400 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                    >
+                        {theme === 'light' ? <MoonIcon className="h-6 w-6" /> : <SunIcon className="h-6 w-6" />}
+                    </button>
                     <button 
                         onClick={() => handleNavClick('profile')}
                         className="flex items-center bg-white dark:bg-[--dark-surface] pl-2 pr-4 py-1 rounded-full soft-shadow transition-colors hover:bg-black/5 dark:hover:bg-white/10"
@@ -165,6 +174,15 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, isSidebarOp
                         />
                     ))}
                 </nav>
+                 <div className="p-4 border-t border-white/10 mt-auto">
+                    <button
+                        onClick={toggleTheme}
+                        className="w-full flex items-center justify-center gap-3 px-4 py-3 text-lg rounded-xl bg-white/5 hover:bg-white/10 text-slate-200"
+                    >
+                        {theme === 'light' ? <MoonIcon className="h-6 w-6" /> : <SunIcon className="h-6 w-6" />}
+                        <span>Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode</span>
+                    </button>
+                </div>
             </div>
         </div>
       </div>

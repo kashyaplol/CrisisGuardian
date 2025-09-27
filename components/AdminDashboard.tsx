@@ -8,6 +8,7 @@ import { DISASTER_MODULES } from '../constants';
 
 interface AdminDashboardProps {
   setView: (view: View) => void;
+  theme: Theme;
 }
 
 const COLORS = ['#FF8042', '#00C49F', '#0088FE', '#FFBB28'];
@@ -58,7 +59,7 @@ const DashboardSkeleton: React.FC = () => (
 );
 
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, theme }) => {
     const [stats, setStats] = useState({
         totalParticipants: 0,
         overallPreparedness: 0,
@@ -67,16 +68,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     const [participationData, setParticipationData] = useState<{ name: string; Drills: number }[]>([]);
     const [preparednessData, setPreparednessData] = useState<{ name: string; value: number }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [theme, setTheme] = useState<Theme>(() => document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleChange = (e: MediaQueryListEvent) => {
-            setTheme(e.matches ? 'dark' : 'light');
-        };
-        mediaQuery.addEventListener('change', handleChange);
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []);
 
     useEffect(() => {
         const fetchData = async () => {

@@ -43,6 +43,27 @@ const App: React.FC = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [selectedRegion, setSelectedRegion] = useState<string>('Delhi');
   
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+        return localStorage.getItem('theme') as Theme;
+    }
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove(theme === 'dark' ? 'light' : 'dark');
+    root.classList.add(theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+  
+  const toggleTheme = useCallback(() => {
+      setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  }, []);
+
   useEffect(() => {
     const initializeApp = async () => {
         await authService.seedInitialUsers();
@@ -237,7 +258,7 @@ const App: React.FC = () => {
         return <Home setView={setCurrentView} user={currentUser} />; // Fallback
       case 'dashboard':
         if (currentUser.role === UserRole.Admin) {
-          return <AdminDashboard setView={setCurrentView} />;
+          return <AdminDashboard setView={setCurrentView} theme={theme} />;
         }
         return <Home setView={setCurrentView} user={currentUser} />; // Fallback
       case 'contacts':
@@ -282,6 +303,8 @@ const App: React.FC = () => {
           currentView={currentView} 
           setView={setCurrentView} 
           user={currentUser}
+          theme={theme}
+          toggleTheme={toggleTheme}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
