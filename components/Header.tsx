@@ -188,7 +188,11 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, togg
                 </button>
             </div>
             <div className="flex-grow p-4 overflow-y-auto flex flex-col">
-                <div className="p-2 rounded-2xl bg-white/5 dark:bg-white/10 mb-4">
+                <button
+                    onClick={() => handleNavClick('profile')}
+                    aria-label="View Profile"
+                    className="w-full p-2 rounded-2xl bg-white/5 dark:bg-white/10 mb-4 text-left hover:bg-white/10 dark:hover:bg-white/20 transition-colors"
+                >
                     <div className="flex items-center">
                          <Avatar avatar={user.avatar} className="h-12 w-12 text-slate-500 dark:text-slate-400 mr-3" />
                          <div>
@@ -208,7 +212,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, togg
                         </div>
                         <XpBar user={user} />
                     </div>
-                </div>
+                </button>
                 <nav className="flex-grow space-y-2">
                     {availableNavItems.map((item) => (
                         <NavLink
