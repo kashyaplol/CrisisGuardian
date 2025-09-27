@@ -93,49 +93,53 @@ export const seedInitialUsers = async () => {
 
     // Test Student
     const studentEmail = 'student@test.com';
-    if (!users[studentEmail]) {
-        users[studentEmail] = {
-            name: 'Test Student',
-            email: studentEmail,
-            password: 'password',
-            role: UserRole.Student,
-            institution: 'Indian Institute of Technology Madras',
-            score: 78,
-            avatar: DEFAULT_AVATARS[1].id,
-            drillHistory: [],
-            // FIX: Add missing properties to conform to User type
-            xp: 1250, // Example XP
-            level: 4, // Calculated from XP
-            streak: { count: 3, lastActivityDate: new Date(Date.now() - 86400000).toISOString() }, // 3 day streak, yesterday
-            unlockedAchievements: [],
-        };
+    const studentData = {
+        name: 'Test Student',
+        email: studentEmail,
+        password: 'password',
+        role: UserRole.Student,
+        institution: 'Indian Institute of Technology Madras',
+        score: 78,
+        avatar: DEFAULT_AVATARS[1].id,
+        drillHistory: [],
+        xp: 1250,
+        level: 4,
+        streak: { count: 3, lastActivityDate: new Date(Date.now() - 86400000).toISOString() },
+        unlockedAchievements: [],
+    };
+
+    // If user doesn't exist or is missing new properties (like streak), create/overwrite it.
+    if (!users[studentEmail] || !users[studentEmail].streak) {
+        users[studentEmail] = studentData;
         usersModified = true;
     }
 
     // Test Admin
     const adminEmail = 'admin@test.com';
-    if (!users[adminEmail]) {
-        users[adminEmail] = {
-            name: 'Test Admin',
-            email: adminEmail,
-            password: 'password',
-            role: UserRole.Admin,
-            institution: 'CrisisGuardian HQ',
-            score: 0,
-            avatar: DEFAULT_AVATARS[2].id,
-            drillHistory: [],
-            // FIX: Add missing properties to conform to User type
-            xp: 0,
-            level: 1,
-            streak: { count: 0, lastActivityDate: null },
-            unlockedAchievements: [],
-        };
+    const adminData = {
+        name: 'Test Admin',
+        email: adminEmail,
+        password: 'password',
+        role: UserRole.Admin,
+        institution: 'CrisisGuardian HQ',
+        score: 0,
+        avatar: DEFAULT_AVATARS[2].id,
+        drillHistory: [],
+        xp: 0,
+        level: 1,
+        streak: { count: 0, lastActivityDate: null },
+        unlockedAchievements: [],
+    };
+    
+    // If user doesn't exist or is missing new properties, create/overwrite it.
+    if (!users[adminEmail] || !users[adminEmail].streak) {
+        users[adminEmail] = adminData;
         usersModified = true;
     }
 
     if (usersModified) {
         await saveUsers(users);
-        console.log('[CrisisGuardian] Initial test users seeded.');
+        console.log('[CrisisGuardian] Initial test users seeded or updated.');
     }
 };
 
