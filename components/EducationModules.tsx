@@ -17,7 +17,7 @@ const StudyMaterialModal: React.FC<{
                     <h3 className="text-2xl font-bold">{module.title}</h3>
                     <p className="text-[--brand-slate]">Key Information & Safety Protocols</p>
                 </div>
-                <button onClick={onClose} className="text-slate-500 hover:text-[--brand-text] dark:text-slate-400 dark:hover:text-slate-100">
+                <button onClick={onClose} className="text-slate-500 hover:text-[--brand-text] dark:text-slate-400 dark:hover:text-slate-100" aria-label="Close study material">
                     <XCircleIcon className="h-7 w-7" />
                 </button>
             </div>
@@ -79,6 +79,7 @@ const EducationModules: React.FC = () => {
               <button
                 onClick={() => setSelectedModule(module)}
                 className="mt-auto w-full bg-[--brand-light-purple] dark:bg-purple-500/30 text-[--brand-text] dark:text-white font-bold py-3 px-4 rounded-2xl hover:bg-purple-200 dark:hover:bg-purple-500/40 transition-colors duration-300 flex items-center justify-center gap-2"
+                aria-label={`Study material for ${module.title}`}
               >
                 <BookOpenIcon className="h-5 w-5" />
                 Study Material
