@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { DisasterType, DrillStep, DrillStepOption, DrillMode } from '../types';
+import { DisasterType, DrillStep, DrillStepOption, DrillMode, VideoStyle } from '../types';
 
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -51,54 +51,6 @@ interface PreviousStepContext {
     userAnswer: DrillStepOption;
     stepsSurvived?: number;
 }
-
-const VIDEO_LESSON_PROMPTS: Record<DisasterType, string> = {
-  [DisasterType.Earthquake]: `
-    Generate a concise 2-4 minute video lesson on Earthquake Safety. The visual style should be clear and authoritative yet reassuring. Use high-quality animation or realistic scenarios. Include text overlays for key points and a professional, calm voiceover. Subtly include the CrisisGuardian logo.
-
-    Title: Earthquake Safety: Drop, Cover, Hold On!
-
-    Content sections:
-    1.  **Introduction**: Briefly explain what an earthquake is and why immediate action is crucial.
-    2.  **"Drop, Cover, Hold On" Demonstration**: Visually demonstrate and explain each step: Drop to the ground, Cover under a sturdy table or desk, and Hold On until shaking stops.
-    3.  **Other Scenarios**: Provide specific visual instructions for being outdoors, in bed, or in a car during an earthquake.
-    4.  **After the Shaking**: Advise on checking for injuries and hazards like gas leaks. Show a phone screen with the CrisisGuardian app's 'I Am Safe' feature being used.
-    5.  **Preparedness Tip**: End with a quick visual of securing heavy furniture and an emergency kit.
-  `,
-  [DisasterType.Flood]: `
-    Generate a concise 2-4 minute video lesson on Flood Preparedness. The visual style should be clear and authoritative yet reassuring. Use high-quality animation or realistic scenarios. Include text overlays for key points and a professional, calm voiceover. Subtly include the CrisisGuardian logo.
-
-    Title: Flood Preparedness: Rising Waters, Smart Choices
-
-    Content sections:
-    1.  **Introduction**: Define different types of floods (flash flood, riverine flood) and their dangers.
-    2.  **Before a Flood**: Show visuals for preparing an emergency kit with waterproof containers, planning an evacuation route, and simple property protection like moving valuables higher.
-    3.  **During a Flood**: Visually reinforce the "Turn Around, Don't Drown!" message for cars and pedestrians. Show a phone screen with the CrisisGuardian app displaying real-time flood warnings. Illustrate moving to higher ground.
-    4.  **After a Flood**: Briefly cover safety tips for returning home, such as checking utilities and being aware of contamination.
-  `,
-  [DisasterType.Fire]: `
-    Generate a concise 2-4 minute video lesson on Fire Emergency safety. The visual style should be clear and authoritative yet reassuring. Use high-quality animation or realistic scenarios. Include text overlays for key points and a professional, calm voiceover. Subtly include the CrisisGuardian logo.
-
-    Title: Fire Emergency: Prevent, Plan, Protect!
-
-    Content sections:
-    1.  **Introduction**: Emphasize the speed and danger of fires.
-    2.  **Fire Prevention**: Show quick visuals for checking smoke alarm batteries, kitchen safety (not leaving cooking unattended), and avoiding overloaded outlets.
-    3.  **Fire Escape Plan**: Animate a family practicing their escape route, emphasizing two ways out and a safe outdoor meeting point.
-    4.  **If a Fire Occurs**: Demonstrate crawling low under smoke, the "Stop, Drop, and Roll" technique, and closing doors to slow the fire. The main message should be "Get Out, Stay Out, Call for help!".
-  `,
-  [DisasterType.Cyclone]: `
-    Generate a concise 2-4 minute video lesson on Cyclone and Hurricane preparedness. The visual style should be clear and authoritative yet reassuring. Use high-quality animation or realistic scenarios. Include text overlays for key points and a professional, calm voiceover. Subtly include the CrisisGuardian logo.
-
-    Title: Cyclone Alert: Weathering the Storm
-
-    Content sections:
-    1.  **Introduction**: Explain what cyclones are and their impacts (high winds, heavy rain, storm surge).
-    2.  **Before the Storm**: Show a phone screen with the CrisisGuardian app tracking a cyclone. Animate securing loose outdoor items and boarding windows. Reiterate the importance of an emergency kit.
-    3.  **During the Storm**: Show people safely sheltered in an interior room, away from windows. Emphasize obeying official evacuation orders.
-    4.  **After the Storm**: Show post-storm hazards like downed power lines and flooding. The message should be to wait for the official "all-clear" before going outside.
-  `
-};
 
 export const generateDrillScenario = async (disasterType: DisasterType, region: string, mode: DrillMode, previousStepContext?: PreviousStepContext): Promise<DrillStep | null> => {
   
@@ -158,6 +110,53 @@ export const generateDrillScenario = async (disasterType: DisasterType, region: 
     console.error("Error generating drill scenario:", error);
     return null;
   }
+};
+
+export const generateVideoLesson = async (disasterType: DisasterType, videoStyle: VideoStyle): Promise<Blob | null> => {
+    const styleDescription = videoStyle === 'cartoon'
+        ? "an engaging, clear, and friendly 2D animated cartoon style suitable for students. Simple characters, bright colors."
+        : "a realistic, high-fidelity simulation. Cinematic and serious tone, but not overly graphic or scary.";
+
+    const coreContent: Record<DisasterType, string> = {
+        [DisasterType.Earthquake]: `A school classroom starts shaking. Students practice 'Drop, Cover, and Hold On' under their desks. Show an evacuation to an open assembly point. End with a title card: "Earthquake Safety: Drop, Cover, Hold On!"`,
+        [DisasterType.Flood]: `Heavy rain causing water levels to rise around a school. Show students calmly evacuating to a higher floor. A visual of a car being swept away with a "Turn Around, Don't Drown" text overlay. End with a title card: "Flood Preparedness: Stay Safe, Stay Dry."`,
+        [DisasterType.Fire]: `A smoke alarm blares in a school hallway. Students are shown crawling low under smoke. A teacher demonstrates the P.A.S.S. method with a fire extinguisher on a small, controlled fire. Evacuation to an outdoor assembly point. End with a title card: "Fire Emergency: Get Out, Stay Out!"`,
+        [DisasterType.Cyclone]: `Strong winds and rain lashing against school windows. Show students sheltered in a strong interior room away from windows. A tree branch falls outside. Show a post-cyclone scene with downed power lines. End with a title card: "Cyclone Alert: Weather the Storm Safely."`,
+    };
+
+    const prompt = `Generate a short, approximately 30-second educational video about ${disasterType} safety in a school setting in India. The video should be in ${styleDescription}. The scene should show: ${coreContent[disasterType]}. The video should be silent.`;
+
+    try {
+        let operation = await ai.models.generateVideos({
+            model: 'veo-2.0-generate-001',
+            prompt: prompt,
+            config: {
+                numberOfVideos: 1,
+            }
+        });
+
+        while (!operation.done) {
+            await new Promise(resolve => setTimeout(resolve, 10000));
+            operation = await ai.operations.getVideosOperation({ operation: operation });
+        }
+        
+        const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+        if (downloadLink) {
+            const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+            if (response.ok) {
+                const videoBlob = await response.blob();
+                return videoBlob;
+            } else {
+                console.error("Failed to download video:", response.statusText);
+                return null;
+            }
+        }
+        return null;
+
+    } catch (error) {
+        console.error("Error generating video lesson:", error);
+        return null;
+    }
 };
 
 export const generateSafetyTips = async (context: string): Promise<string | null> => {
