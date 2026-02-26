@@ -232,25 +232,33 @@ const App: React.FC = () => {
     institution: string,
     password?: string
   }) => {
-    const otpHint = authService.sendOtp(details.email);
+    const otpHint = authService.sendSignupOtp(details.email);
     setAuthInfo({ flow: 'signup', ...details, otpHint });
     setView('verifyOtp');
   }, [setView]);
 
   const handleStartForgotPassword = useCallback(async (email: string): Promise<boolean> => {
-    const userExists = await authService.findUserByEmail(email);
-    if (userExists) {
-      const otpHint = authService.sendOtp(email);
-      setAuthInfo({ flow: 'forgotPassword', email, otpHint });
-      setView('verifyOtp');
-      return true;
-    }
-    return false;
+    const otpHint = await authService.requestPasswordReset(email);
+    setAuthInfo({ flow: 'forgotPassword', email, otpHint });
+    setView('verifyOtp');
+    return true;
   }, [setView]);
+
+  const handleVerifyOtpCode = useCallback(
+    async (otp: string): Promise<boolean> => {
+      if (!authInfo) return false;
+      if (authInfo.flow === 'signup') {
+        return authService.verifySignupOtp(authInfo.email, otp);
+      }
+      return authService.verifyPasswordResetOtp(authInfo.email, otp);
+    },
+    [authInfo]
+  );
 
   const handleResetPassword = useCallback(async (password: string): Promise<void> => {
     if (authInfo?.flow === 'forgotPassword') {
-      await authService.updatePassword(authInfo.email, password);
+      await authService.updatePassword(password);
+      authService.clearPendingPasswordReset();
       setAuthInfo(null);
       setView('login');
     }
@@ -278,8 +286,8 @@ const App: React.FC = () => {
           unlockedAchievements: [],
         };
         await authService.createUser(newUser);
-        await authService.createSession(newUser);
-        setCurrentUser(newUser);
+        const sessionUser = await authService.checkSession();
+        setCurrentUser(sessionUser || { ...newUser, password: undefined });
         setView('home');
         setAuthInfo(null);
       } else {
@@ -356,7 +364,14 @@ const App: React.FC = () => {
         return <Login onLogin={handleLogin} setView={setView} />;
       case 'verifyOtp':
         if (authInfo) {
-          return <VerifyOtp authInfo={authInfo} onVerified={handleOtpVerified} otpHint={authInfo.otpHint} />;
+          return (
+            <VerifyOtp
+              authInfo={authInfo}
+              verifyCode={handleVerifyOtpCode}
+              onVerified={handleOtpVerified}
+              otpHint={authInfo.otpHint}
+            />
+          );
         }
         return <Login onLogin={handleLogin} setView={setView} />;
       default:

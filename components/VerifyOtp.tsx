@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CrisisGuardianLogo } from './icons/Icons';
-import * as authService from '../services/authService';
 
 type AuthInfo = {
   flow: 'signup' | 'forgotPassword';
@@ -9,11 +8,12 @@ type AuthInfo = {
 
 interface VerifyOtpProps {
   authInfo: AuthInfo;
+  verifyCode: (code: string) => Promise<boolean>;
   onVerified: (email: string) => void;
   otpHint?: string;
 }
 
-const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified, otpHint }) => {
+const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, verifyCode, onVerified, otpHint }) => {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
   const [error, setError] = useState<string>('');
   const [showHint, setShowHint] = useState(true);
@@ -50,7 +50,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified, otpHint }) 
       }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     const enteredOtp = otp.join('');
@@ -60,7 +60,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, onVerified, otpHint }) 
       return;
     }
 
-    const isValid = authService.verifyOtp(authInfo.email, enteredOtp);
+    const isValid = await verifyCode(enteredOtp);
 
     if (isValid) {
       onVerified(authInfo.email);

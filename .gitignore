@@ -25,3 +25,6 @@ dist-ssr
 
 # Local SQLite database files
 data/
+
+# Local runtime toolchain
+.tools/

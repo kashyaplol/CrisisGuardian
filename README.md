@@ -20,9 +20,10 @@ This project now includes:
    npm install
    ```
 
-2. Set your Gemini key in `.env.local`:
+2. Set your backend env vars in `.env.local`:
    ```env
    GEMINI_API_KEY=your_api_key_here
+   JWT_SECRET=your_strong_random_secret_here
    ```
 
 3. Start frontend + API together:
@@ -41,6 +42,12 @@ This project now includes:
 - `npm run dev:full` - frontend + API together
 - `npm run build` - production frontend build
 - `npm run start:api` - start API without watch mode
+
+## Security Notes
+
+- Authentication is handled server-side with HTTP-only signed session cookies.
+- Passwords are hashed (`bcrypt`) before storage.
+- AI calls are proxied through backend `/api/ai/*` routes so API keys are not exposed in the client bundle.
 
 ## Database Notes
 

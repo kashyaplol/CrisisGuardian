@@ -2,6 +2,7 @@ import { AnalyticsData, DrillResult } from '../types';
 
 const apiFetch = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const response = await fetch(`/api${path}`, {
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(init?.headers || {}),
@@ -40,23 +41,8 @@ const saveAnalytics = async (data: AnalyticsData): Promise<void> => {
 };
 
 export const updateAnalyticsOnDrillComplete = async (result: DrillResult): Promise<void> => {
-  const data = await getAnalytics();
-
-  data.totalDrillsCompleted += 1;
-  data.drillsByType[result.disasterType] = (data.drillsByType[result.disasterType] || 0) + 1;
-
-  if (result.mode === 'Standard' && result.score !== undefined && result.totalQuestions !== undefined) {
-    const { disasterType, score, totalQuestions } = result;
-
-    data.overallScoreSum += score;
-    data.overallQuestionSum += totalQuestions;
-
-    const typeScores = data.scoresByType[disasterType] || { scoreSum: 0, questionSum: 0, count: 0 };
-    typeScores.scoreSum += score;
-    typeScores.questionSum += totalQuestions;
-    typeScores.count += 1;
-    data.scoresByType[disasterType] = typeScores;
-  }
-
-  await saveAnalytics(data);
+  await apiFetch<{ ok: boolean }>('/analytics/drill-complete', {
+    method: 'POST',
+    body: JSON.stringify(result),
+  });
 };
