@@ -82,16 +82,22 @@ This app can be deployed as a single Node service:
 ### Render (recommended)
 
 1. Push this repo to GitHub.
-2. In Render, create a **Web Service** from the repo.
-3. Set:
-   - Runtime: `Node`
-   - Build Command: `npm install && npm run build`
-   - Start Command: `npm start`
-4. Add environment variable:
+2. In Render, create a **Blueprint** from the repo (uses `render.yaml` in this project).
+3. Set these environment variables in Render:
    - `GEMINI_API_KEY=your_key`
-5. Add a **Persistent Disk** (important for SQLite persistence):
-   - Mount path: `/opt/render/project/src/data`
-6. Deploy.
+   - `SMTP_HOST=...`
+   - `SMTP_PORT=587`
+   - `SMTP_SECURE=false`
+   - `SMTP_USER=...`
+   - `SMTP_PASS=...`
+   - `SMTP_FROM=CrisisGuardian <no-reply@yourdomain.com>`
+4. Deploy.
+
+Notes:
+- On Render free tier, filesystem is ephemeral and SQLite data can reset on restarts/redeploys.
+- For persistence, upgrade plan and attach a disk mounted at `/opt/render/project/src/data`.
+- `FRONTEND_ORIGIN` is optional on Render because backend falls back to `RENDER_EXTERNAL_URL`.
+- If you do set `FRONTEND_ORIGIN`, use your exact Render app URL (for example, `https://your-app.onrender.com`).
 
 After deploy:
 - App URL: `https://<your-service>.onrender.com`

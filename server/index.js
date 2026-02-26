@@ -20,7 +20,10 @@ const app = express();
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const IS_PROD = NODE_ENV === 'production';
 const PORT = Number(process.env.PORT || process.env.API_PORT || 3001);
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
+const FRONTEND_ORIGIN =
+  process.env.FRONTEND_ORIGIN ||
+  process.env.RENDER_EXTERNAL_URL ||
+  process.env.APP_ORIGIN;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-change-this-jwt-secret';
 const SIGNUP_TOKEN_SECRET = process.env.SIGNUP_TOKEN_SECRET || `${JWT_SECRET}-signup`;
 const RESET_TOKEN_SECRET = process.env.RESET_TOKEN_SECRET || `${JWT_SECRET}-reset`;
