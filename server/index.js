@@ -7,6 +7,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
+import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -29,6 +30,12 @@ const SIGNUP_OTP_TTL_MS = 1000 * 60 * 5;
 const PASSWORD_RESET_OTP_TTL_MS = 1000 * 60 * 5;
 const OTP_MAX_ATTEMPTS = 5;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = Number(process.env.SMTP_PORT || 0);
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+const SMTP_SECURE = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
+const SMTP_FROM = process.env.SMTP_FROM;
 const DB_DIR = path.resolve(process.cwd(), 'data');
 const DB_PATH = path.join(DB_DIR, 'crisisguardian.db');
 const DIST_PATH = path.resolve(process.cwd(), 'dist');
@@ -101,6 +108,9 @@ if (!IS_PROD && process.env.JWT_SECRET == null) {
 if (!IS_PROD && !GEMINI_API_KEY) {
   console.warn('[CrisisGuardian API] GEMINI_API_KEY is not configured. AI endpoints will be unavailable.');
 }
+if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !SMTP_FROM) {
+  console.warn('[CrisisGuardian API] SMTP config is incomplete. OTP emails will not be sent.');
+}
 
 const ai = GEMINI_API_KEY ? new GoogleGenAI({ apiKey: GEMINI_API_KEY }) : null;
 
@@ -155,7 +165,24 @@ const OTP_TABLES = {
   passwordReset: 'password_reset_codes'
 };
 
+const OTP_PURPOSE_TITLES = {
+  signup: 'Sign-Up Verification',
+  passwordReset: 'Password Reset'
+};
+
 const getOtpTableName = (purpose) => OTP_TABLES[purpose];
+const otpEmailEnabled = Boolean(SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS && SMTP_FROM);
+const mailTransporter = otpEmailEnabled
+  ? nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_SECURE,
+      auth: {
+        user: SMTP_USER,
+        pass: SMTP_PASS
+      }
+    })
+  : null;
 
 const issueOtpCode = ({ purpose, email, ttlMs }) => {
   const table = getOtpTableName(purpose);
@@ -216,6 +243,41 @@ const verifyAndConsumeOtpCode = ({ purpose, email, otp }) => {
 
   db.prepare(`DELETE FROM ${table} WHERE email = ?`).run(email);
   return true;
+};
+
+const sendOtpEmail = async ({ purpose, email, otp, ttlMs }) => {
+  if (!mailTransporter || !otpEmailEnabled) {
+    throw new Error('OTP email service is not configured.');
+  }
+
+  const purposeTitle = OTP_PURPOSE_TITLES[purpose] || 'Verification';
+  const ttlMinutes = Math.max(1, Math.round(ttlMs / 60000));
+  const subject = `CrisisGuardian ${purposeTitle} Code`;
+
+  const text = [
+    `Your CrisisGuardian ${purposeTitle.toLowerCase()} code is: ${otp}`,
+    `This code expires in ${ttlMinutes} minute(s).`,
+    '',
+    'If you did not request this code, you can ignore this email.'
+  ].join('\n');
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+      <h2 style="margin: 0 0 12px;">CrisisGuardian ${purposeTitle}</h2>
+      <p>Your verification code is:</p>
+      <p style="font-size: 28px; font-weight: 700; letter-spacing: 4px; margin: 12px 0;">${otp}</p>
+      <p>This code expires in <strong>${ttlMinutes} minute(s)</strong>.</p>
+      <p style="font-size: 13px; color: #6b7280;">If you did not request this code, you can ignore this email.</p>
+    </div>
+  `;
+
+  await mailTransporter.sendMail({
+    from: SMTP_FROM,
+    to: email,
+    subject,
+    text,
+    html
+  });
 };
 
 const parseRowPayload = (row) => {
@@ -557,7 +619,7 @@ app.post('/api/auth/check-email', authLimiter, (req, res) => {
   return res.json({ exists });
 });
 
-app.post('/api/auth/request-signup-otp', authLimiter, (req, res) => {
+app.post('/api/auth/request-signup-otp', authLimiter, async (req, res) => {
   const email = normalizeEmail(req.body?.email);
   if (!email || !isValidEmail(email)) {
     return res.status(400).json({ error: 'Valid email is required.' });
@@ -565,8 +627,26 @@ app.post('/api/auth/request-signup-otp', authLimiter, (req, res) => {
   if (getUserRecord(email)) {
     return res.status(409).json({ error: 'An account with this email already exists.' });
   }
+  if (IS_PROD && !otpEmailEnabled) {
+    return res.status(503).json({ error: 'OTP email service is not configured.' });
+  }
 
   const otp = issueOtpCode({ purpose: 'signup', email, ttlMs: SIGNUP_OTP_TTL_MS });
+  try {
+    if (otpEmailEnabled) {
+      await sendOtpEmail({
+        purpose: 'signup',
+        email,
+        otp,
+        ttlMs: SIGNUP_OTP_TTL_MS
+      });
+    }
+  } catch (error) {
+    console.error('Failed to send signup OTP email:', error);
+    db.prepare('DELETE FROM signup_verification_codes WHERE email = ?').run(email);
+    return res.status(502).json({ error: 'Failed to deliver verification code email.' });
+  }
+
   if (!IS_PROD) {
     return res.json({ ok: true, otpHint: otp });
   }
@@ -686,15 +766,31 @@ app.post('/api/auth/logout', (_req, res) => {
   return res.json({ ok: true });
 });
 
-app.post('/api/auth/request-password-reset', authLimiter, (req, res) => {
+app.post('/api/auth/request-password-reset', authLimiter, async (req, res) => {
   const email = normalizeEmail(req.body?.email);
   if (!email || !isValidEmail(email)) {
     return res.status(400).json({ error: 'Valid email is required.' });
+  }
+  if (IS_PROD && !otpEmailEnabled) {
+    return res.status(503).json({ error: 'OTP email service is not configured.' });
   }
 
   const userRecord = getUserRecord(email);
   if (userRecord) {
     const otp = issueOtpCode({ purpose: 'passwordReset', email, ttlMs: PASSWORD_RESET_OTP_TTL_MS });
+    if (otpEmailEnabled) {
+      try {
+        await sendOtpEmail({
+          purpose: 'passwordReset',
+          email,
+          otp,
+          ttlMs: PASSWORD_RESET_OTP_TTL_MS
+        });
+      } catch (error) {
+        // Keep response generic to avoid account enumeration.
+        console.error('Failed to send password reset OTP email:', error);
+      }
+    }
 
     if (!IS_PROD) {
       return res.json({ ok: true, otpHint: otp });

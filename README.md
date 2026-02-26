@@ -24,6 +24,13 @@ This project now includes:
    ```env
    GEMINI_API_KEY=your_api_key_here
    JWT_SECRET=your_strong_random_secret_here
+   # Required to send OTPs by email
+   SMTP_HOST=smtp.yourprovider.com
+   SMTP_PORT=587
+   SMTP_SECURE=false
+   SMTP_USER=your_smtp_username
+   SMTP_PASS=your_smtp_password
+   SMTP_FROM="CrisisGuardian <no-reply@yourdomain.com>"
    ```
 
 3. Start frontend + API together:
@@ -47,7 +54,16 @@ This project now includes:
 
 - Authentication is handled server-side with HTTP-only signed session cookies.
 - Passwords are hashed (`bcrypt`) before storage.
+- Signup and password-reset OTPs are generated and verified server-side.
+- OTP emails are sent via SMTP when `SMTP_*` variables are configured.
 - AI calls are proxied through backend `/api/ai/*` routes so API keys are not exposed in the client bundle.
+
+## OTP Delivery Notes
+
+- Production: OTP codes are delivered only by email.
+- Local development:
+  - If SMTP is configured, OTP is sent to the email inbox.
+  - If SMTP is not configured, OTP is returned as `otpHint` in the API response for testing.
 
 ## Database Notes
 
