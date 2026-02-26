@@ -16,6 +16,7 @@ interface VerifyOtpProps {
 const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, verifyCode, onVerified, otpHint }) => {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
   const [error, setError] = useState<string>('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -52,6 +53,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, verifyCode, onVerified,
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isVerifying) return;
     setError('');
     const enteredOtp = otp.join('');
 
@@ -60,7 +62,9 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, verifyCode, onVerified,
       return;
     }
 
+    setIsVerifying(true);
     const isValid = await verifyCode(enteredOtp);
+    setIsVerifying(false);
 
     if (isValid) {
       onVerified(authInfo.email);
@@ -107,6 +111,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, verifyCode, onVerified,
                   onChange={e => handleChange(e.target, index)}
                   onKeyDown={e => handleKeyDown(e, index)}
                   onFocus={e => e.target.select()}
+                  disabled={isVerifying}
                   ref={el => { if (el) { inputsRef.current[index] = el; } }}
                   className="w-12 h-14 text-center text-2xl font-semibold bg-purple-500/5 dark:bg-white/10 border-2 border-transparent focus:border-[--brand-purple] focus:ring-0 rounded-2xl transition-colors"
                 />
@@ -117,9 +122,10 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ authInfo, verifyCode, onVerified,
 
             <button
               type="submit"
+              disabled={isVerifying}
               className="w-full mt-6 bg-[--brand-purple] text-white font-bold py-4 px-4 rounded-2xl hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-1"
             >
-              {buttonText}
+              {isVerifying ? 'Verifying...' : buttonText}
             </button>
           </form>
         </div>

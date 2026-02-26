@@ -1,6 +1,6 @@
 import { User } from '../types';
 
-const SIGNUP_OTP_KEY = 'crisis_guardian_signup_otp';
+const SIGNUP_TOKEN_KEY = 'crisis_guardian_signup_token';
 const RESET_TOKEN_KEY = 'crisis_guardian_reset_token';
 
 interface InstitutionsDB {
@@ -90,6 +90,11 @@ export const findUserByEmail = async (email: string): Promise<User | null> => {
 };
 
 export const createUser = async (user: User): Promise<boolean> => {
+  const signupToken = sessionStorage.getItem(SIGNUP_TOKEN_KEY);
+  if (!signupToken) {
+    return false;
+  }
+
   try {
     await wait(MOCK_API_LATENCY);
     await apiFetch<{ user: User }>('/auth/signup', {
@@ -102,8 +107,10 @@ export const createUser = async (user: User): Promise<boolean> => {
         institution: user.institution,
         phone: user.phone,
         avatar: user.avatar,
+        signupToken,
       }),
     });
+    sessionStorage.removeItem(SIGNUP_TOKEN_KEY);
     return true;
   } catch {
     return false;
@@ -143,31 +150,31 @@ export const checkSession = async (): Promise<User | null> => {
 
 export const clearSession = async () => {
   await wait(MOCK_API_LATENCY / 2);
+  clearPendingSignupVerification();
   clearPendingPasswordReset();
   await apiFetch<{ ok: boolean }>('/auth/logout', { method: 'POST' });
 };
 
-export const sendSignupOtp = (email: string): string => {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpData = { email: email.toLowerCase(), otp, timestamp: Date.now() };
-  sessionStorage.setItem(SIGNUP_OTP_KEY, JSON.stringify(otpData));
-  return otp;
+export const requestSignupOtp = async (email: string): Promise<string | undefined> => {
+  await wait(MOCK_API_LATENCY / 2);
+  const payload = await apiFetch<{ ok: boolean; otpHint?: string }>('/auth/request-signup-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email: email.toLowerCase() }),
+  });
+  return payload.otpHint;
 };
 
-export const verifySignupOtp = (email: string, otp: string): boolean => {
-  const otpDataString = sessionStorage.getItem(SIGNUP_OTP_KEY);
-  if (!otpDataString) return false;
-
-  const otpData = JSON.parse(otpDataString);
-  const isEmailMatch = otpData.email === email.toLowerCase();
-  const isOtpMatch = otpData.otp === otp;
-  const isNotExpired = Date.now() - otpData.timestamp < 5 * 60 * 1000;
-
-  if (isEmailMatch && isOtpMatch && isNotExpired) {
-    sessionStorage.removeItem(SIGNUP_OTP_KEY);
+export const verifySignupOtp = async (email: string, otp: string): Promise<boolean> => {
+  try {
+    const payload = await apiFetch<{ ok: boolean; signupToken: string }>('/auth/verify-signup-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email: email.toLowerCase(), otp }),
+    });
+    sessionStorage.setItem(SIGNUP_TOKEN_KEY, payload.signupToken);
     return true;
+  } catch {
+    return false;
   }
-  return false;
 };
 
 export const requestPasswordReset = async (email: string): Promise<string | undefined> => {
@@ -211,4 +218,8 @@ export const updatePassword = async (newPassword: string): Promise<boolean> => {
 
 export const clearPendingPasswordReset = () => {
   sessionStorage.removeItem(RESET_TOKEN_KEY);
+};
+
+export const clearPendingSignupVerification = () => {
+  sessionStorage.removeItem(SIGNUP_TOKEN_KEY);
 };

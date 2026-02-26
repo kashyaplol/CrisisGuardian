@@ -224,24 +224,33 @@ const App: React.FC = () => {
     return false;
   }, [setView]);
 
-  const handleStartSignup = useCallback((details: {
+  const handleStartSignup = useCallback(async (details: {
     name: string,
     email: string,
     phone?: string,
     role: UserRole,
     institution: string,
     password?: string
-  }) => {
-    const otpHint = authService.sendSignupOtp(details.email);
-    setAuthInfo({ flow: 'signup', ...details, otpHint });
-    setView('verifyOtp');
+  }): Promise<boolean> => {
+    try {
+      const otpHint = await authService.requestSignupOtp(details.email);
+      setAuthInfo({ flow: 'signup', ...details, otpHint });
+      setView('verifyOtp');
+      return true;
+    } catch {
+      return false;
+    }
   }, [setView]);
 
   const handleStartForgotPassword = useCallback(async (email: string): Promise<boolean> => {
-    const otpHint = await authService.requestPasswordReset(email);
-    setAuthInfo({ flow: 'forgotPassword', email, otpHint });
-    setView('verifyOtp');
-    return true;
+    try {
+      const otpHint = await authService.requestPasswordReset(email);
+      setAuthInfo({ flow: 'forgotPassword', email, otpHint });
+      setView('verifyOtp');
+      return true;
+    } catch {
+      return false;
+    }
   }, [setView]);
 
   const handleVerifyOtpCode = useCallback(
@@ -285,7 +294,12 @@ const App: React.FC = () => {
           streak: { count: 0, lastActivityDate: null },
           unlockedAchievements: [],
         };
-        await authService.createUser(newUser);
+        const created = await authService.createUser(newUser);
+        if (!created) {
+          setView('signup');
+          setAuthInfo(null);
+          return;
+        }
         const sessionUser = await authService.checkSession();
         setCurrentUser(sessionUser || { ...newUser, password: undefined });
         setView('home');

@@ -21,10 +21,13 @@ const IS_PROD = NODE_ENV === 'production';
 const PORT = Number(process.env.PORT || process.env.API_PORT || 3001);
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-change-this-jwt-secret';
+const SIGNUP_TOKEN_SECRET = process.env.SIGNUP_TOKEN_SECRET || `${JWT_SECRET}-signup`;
 const RESET_TOKEN_SECRET = process.env.RESET_TOKEN_SECRET || `${JWT_SECRET}-reset`;
 const SESSION_COOKIE_NAME = 'cg_session';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
+const SIGNUP_OTP_TTL_MS = 1000 * 60 * 5;
 const PASSWORD_RESET_OTP_TTL_MS = 1000 * 60 * 5;
+const OTP_MAX_ATTEMPTS = 5;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const DB_DIR = path.resolve(process.cwd(), 'data');
 const DB_PATH = path.join(DB_DIR, 'crisisguardian.db');
@@ -75,6 +78,15 @@ CREATE TABLE IF NOT EXISTS password_reset_codes (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   FOREIGN KEY(email) REFERENCES users(email)
+);
+
+CREATE TABLE IF NOT EXISTS signup_verification_codes (
+  email TEXT PRIMARY KEY,
+  code_hash TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
 );
 `);
 
@@ -138,6 +150,73 @@ const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const hashPassword = (password) => bcrypt.hashSync(password, 12);
 const verifyPassword = (password, hash) => bcrypt.compareSync(password, hash);
 const hashOtp = (otp) => crypto.createHash('sha256').update(String(otp)).digest('hex');
+const OTP_TABLES = {
+  signup: 'signup_verification_codes',
+  passwordReset: 'password_reset_codes'
+};
+
+const getOtpTableName = (purpose) => OTP_TABLES[purpose];
+
+const issueOtpCode = ({ purpose, email, ttlMs }) => {
+  const table = getOtpTableName(purpose);
+  if (!table) throw new Error('Unknown OTP purpose.');
+
+  const otp = String(Math.floor(100000 + Math.random() * 900000));
+  const stamp = nowIso();
+
+  db.prepare(`
+    INSERT INTO ${table}(email, code_hash, expires_at, attempts, created_at, updated_at)
+    VALUES(@email, @codeHash, @expiresAt, 0, @createdAt, @updatedAt)
+    ON CONFLICT(email) DO UPDATE SET
+      code_hash = excluded.code_hash,
+      expires_at = excluded.expires_at,
+      attempts = 0,
+      updated_at = excluded.updated_at
+  `).run({
+    email,
+    codeHash: hashOtp(otp),
+    expiresAt: new Date(Date.now() + ttlMs).toISOString(),
+    createdAt: stamp,
+    updatedAt: stamp
+  });
+
+  return otp;
+};
+
+const verifyAndConsumeOtpCode = ({ purpose, email, otp }) => {
+  const table = getOtpTableName(purpose);
+  if (!table) throw new Error('Unknown OTP purpose.');
+
+  const row = db
+    .prepare(`SELECT email, code_hash, expires_at, attempts FROM ${table} WHERE email = ?`)
+    .get(email);
+
+  if (!row) {
+    return false;
+  }
+
+  if (new Date(row.expires_at).getTime() < Date.now()) {
+    db.prepare(`DELETE FROM ${table} WHERE email = ?`).run(email);
+    return false;
+  }
+
+  if (row.code_hash !== hashOtp(otp)) {
+    const attempts = Number(row.attempts || 0) + 1;
+    if (attempts >= OTP_MAX_ATTEMPTS) {
+      db.prepare(`DELETE FROM ${table} WHERE email = ?`).run(email);
+    } else {
+      db.prepare(`UPDATE ${table} SET attempts = ?, updated_at = ? WHERE email = ?`).run(
+        attempts,
+        nowIso(),
+        email
+      );
+    }
+    return false;
+  }
+
+  db.prepare(`DELETE FROM ${table} WHERE email = ?`).run(email);
+  return true;
+};
 
 const parseRowPayload = (row) => {
   if (!row) return null;
@@ -478,8 +557,45 @@ app.post('/api/auth/check-email', authLimiter, (req, res) => {
   return res.json({ exists });
 });
 
+app.post('/api/auth/request-signup-otp', authLimiter, (req, res) => {
+  const email = normalizeEmail(req.body?.email);
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({ error: 'Valid email is required.' });
+  }
+  if (getUserRecord(email)) {
+    return res.status(409).json({ error: 'An account with this email already exists.' });
+  }
+
+  const otp = issueOtpCode({ purpose: 'signup', email, ttlMs: SIGNUP_OTP_TTL_MS });
+  if (!IS_PROD) {
+    return res.json({ ok: true, otpHint: otp });
+  }
+  return res.json({ ok: true });
+});
+
+app.post('/api/auth/verify-signup-otp', authLimiter, (req, res) => {
+  const email = normalizeEmail(req.body?.email);
+  const otp = String(req.body?.otp || '').trim();
+  if (!email || !isValidEmail(email) || !/^\d{6}$/.test(otp)) {
+    return res.status(400).json({ error: 'Invalid email or OTP format.' });
+  }
+  if (getUserRecord(email)) {
+    return res.status(409).json({ error: 'An account with this email already exists.' });
+  }
+
+  const verified = verifyAndConsumeOtpCode({ purpose: 'signup', email, otp });
+  if (!verified) {
+    return res.status(400).json({ error: 'Invalid or expired verification code.' });
+  }
+
+  const signupToken = jwt.sign({ sub: email, purpose: 'signup-verified' }, SIGNUP_TOKEN_SECRET, {
+    expiresIn: '10m'
+  });
+  return res.json({ ok: true, signupToken });
+});
+
 app.post('/api/auth/signup', authLimiter, (req, res) => {
-  const { name, email, password, role, institution, phone, avatar } = req.body || {};
+  const { name, email, password, role, institution, phone, avatar, signupToken } = req.body || {};
   const normalizedEmail = normalizeEmail(email);
 
   if (!normalizedEmail || !isValidEmail(normalizedEmail)) {
@@ -496,6 +612,23 @@ app.post('/api/auth/signup', authLimiter, (req, res) => {
   }
   if (typeof institution !== 'string' || !institution.trim()) {
     return res.status(400).json({ error: 'Institution is required.' });
+  }
+  if (!signupToken || typeof signupToken !== 'string') {
+    return res.status(400).json({ error: 'Signup verification is required.' });
+  }
+
+  let decodedSignupToken;
+  try {
+    decodedSignupToken = jwt.verify(signupToken, SIGNUP_TOKEN_SECRET);
+  } catch {
+    return res.status(400).json({ error: 'Invalid or expired signup verification token.' });
+  }
+
+  if (decodedSignupToken?.purpose !== 'signup-verified') {
+    return res.status(400).json({ error: 'Invalid signup verification token.' });
+  }
+  if (normalizeEmail(decodedSignupToken?.sub) !== normalizedEmail) {
+    return res.status(400).json({ error: 'Signup verification token does not match this email.' });
   }
 
   if (getUserRecord(normalizedEmail)) {
@@ -561,23 +694,7 @@ app.post('/api/auth/request-password-reset', authLimiter, (req, res) => {
 
   const userRecord = getUserRecord(email);
   if (userRecord) {
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    const stamp = nowIso();
-    db.prepare(`
-      INSERT INTO password_reset_codes(email, code_hash, expires_at, attempts, created_at, updated_at)
-      VALUES(@email, @codeHash, @expiresAt, 0, @createdAt, @updatedAt)
-      ON CONFLICT(email) DO UPDATE SET
-        code_hash = excluded.code_hash,
-        expires_at = excluded.expires_at,
-        attempts = 0,
-        updated_at = excluded.updated_at
-    `).run({
-      email,
-      codeHash: hashOtp(otp),
-      expiresAt: new Date(Date.now() + PASSWORD_RESET_OTP_TTL_MS).toISOString(),
-      createdAt: stamp,
-      updatedAt: stamp
-    });
+    const otp = issueOtpCode({ purpose: 'passwordReset', email, ttlMs: PASSWORD_RESET_OTP_TTL_MS });
 
     if (!IS_PROD) {
       return res.json({ ok: true, otpHint: otp });
@@ -594,33 +711,10 @@ app.post('/api/auth/verify-password-reset', authLimiter, (req, res) => {
     return res.status(400).json({ error: 'Invalid email or OTP format.' });
   }
 
-  const row = db
-    .prepare('SELECT email, code_hash, expires_at, attempts FROM password_reset_codes WHERE email = ?')
-    .get(email);
-  if (!row) {
+  const verified = verifyAndConsumeOtpCode({ purpose: 'passwordReset', email, otp });
+  if (!verified) {
     return res.status(400).json({ error: 'Invalid or expired verification code.' });
   }
-
-  if (new Date(row.expires_at).getTime() < Date.now()) {
-    db.prepare('DELETE FROM password_reset_codes WHERE email = ?').run(email);
-    return res.status(400).json({ error: 'Invalid or expired verification code.' });
-  }
-
-  if (row.code_hash !== hashOtp(otp)) {
-    const attempts = Number(row.attempts || 0) + 1;
-    if (attempts >= 5) {
-      db.prepare('DELETE FROM password_reset_codes WHERE email = ?').run(email);
-    } else {
-      db.prepare('UPDATE password_reset_codes SET attempts = ?, updated_at = ? WHERE email = ?').run(
-        attempts,
-        nowIso(),
-        email
-      );
-    }
-    return res.status(400).json({ error: 'Invalid or expired verification code.' });
-  }
-
-  db.prepare('DELETE FROM password_reset_codes WHERE email = ?').run(email);
   const resetToken = jwt.sign({ sub: email, purpose: 'password-reset' }, RESET_TOKEN_SECRET, {
     expiresIn: '10m'
   });

@@ -11,7 +11,7 @@ interface SignupProps {
       role: UserRole,
       institution: string,
       password?: string
-    }) => void;
+    }) => Promise<boolean>;
   setView: (view: View) => void;
 }
 
@@ -133,13 +133,19 @@ const Signup: React.FC<SignupProps> = ({ onStartSignup, setView }) => {
         return;
     }
 
-    onStartSignup({
+    const started = await onStartSignup({
       name,
       email,
       role: selectedRole,
       institution: finalInstitution,
       password
     });
+
+    if (!started) {
+      setError('Could not send verification code right now. Please try again.');
+      setIsLoading(false);
+      return;
+    }
   };
 
   return (
