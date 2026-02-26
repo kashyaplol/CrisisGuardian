@@ -2,19 +2,102 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# CrisisGuardian (Frontend + SQLite API)
 
-This contains everything you need to run your app locally.
+This project now includes:
+- React + Vite frontend
+- Local Express API
+- SQLite database persisted at `data/crisisguardian.db`
 
-View your app in AI Studio: https://ai.studio/apps/drive/1HIkFD75u79v2pEvOumzoFI_xcH_sLo2C
+## Prerequisites
+
+- Node.js 20+
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
-
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```bash
+   npm install
+   ```
+
+2. Set your Gemini key in `.env.local`:
+   ```env
+   GEMINI_API_KEY=your_api_key_here
+   ```
+
+3. Start frontend + API together:
+   ```bash
+   npm run dev:full
+   ```
+
+4. Open the app:
+   - Frontend: `http://localhost:3000`
+   - API health check: `http://localhost:3001/api/health`
+
+## Useful Scripts
+
+- `npm run dev` - frontend only
+- `npm run dev:api` - API only
+- `npm run dev:full` - frontend + API together
+- `npm run build` - production frontend build
+- `npm run start:api` - start API without watch mode
+
+## Database Notes
+
+- SQLite file location: `data/crisisguardian.db`
+- Seed data is added automatically (institutions + test users).
+- Existing test logins remain:
+  - `student@test.com` / `password`
+  - `admin@test.com` / `password`
+
+## Deploy (Single Service)
+
+This app can be deployed as a single Node service:
+- Express serves `/api/*`
+- Express also serves the built frontend (`dist/`)
+
+### Render (recommended)
+
+1. Push this repo to GitHub.
+2. In Render, create a **Web Service** from the repo.
+3. Set:
+   - Runtime: `Node`
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm start`
+4. Add environment variable:
+   - `GEMINI_API_KEY=your_key`
+5. Add a **Persistent Disk** (important for SQLite persistence):
+   - Mount path: `/opt/render/project/src/data`
+6. Deploy.
+
+After deploy:
+- App URL: `https://<your-service>.onrender.com`
+- Health check: `https://<your-service>.onrender.com/api/health`
+
+### Railway
+
+1. Create a new Railway project from this repo.
+2. Set:
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm start`
+3. Add env var:
+   - `GEMINI_API_KEY=your_key`
+4. Add a volume and mount it to the project `data` directory for SQLite persistence.
+
+## Deploy with Docker
+
+This repo now includes a `Dockerfile`.
+
+Build image:
+```bash
+docker build -t crisisguardian .
+```
+
+Run container:
+```bash
+docker run -p 3001:3001 -e GEMINI_API_KEY=your_key -v $(pwd)/data:/app/data crisisguardian
+```
+
+Then open:
+- `http://localhost:3001`
+- `http://localhost:3001/api/health`

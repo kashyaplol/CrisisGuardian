@@ -1,6 +1,20 @@
 import { AnalyticsData, DrillResult } from '../types';
 
-const ANALYTICS_DB_KEY = 'crisis_guardian_analytics';
+const apiFetch = async <T>(path: string, init?: RequestInit): Promise<T> => {
+  const response = await fetch(`/api${path}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers || {}),
+    },
+    ...init,
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+  }
+
+  return (await response.json()) as T;
+};
 
 const getDefaultAnalytics = (): AnalyticsData => ({
   totalDrillsCompleted: 0,
@@ -11,25 +25,26 @@ const getDefaultAnalytics = (): AnalyticsData => ({
 });
 
 export const getAnalytics = async (): Promise<AnalyticsData> => {
-  const data = localStorage.getItem(ANALYTICS_DB_KEY);
-  if (data) {
-    return JSON.parse(data);
+  try {
+    return await apiFetch<AnalyticsData>('/analytics');
+  } catch {
+    return getDefaultAnalytics();
   }
-  return getDefaultAnalytics();
 };
 
 const saveAnalytics = async (data: AnalyticsData): Promise<void> => {
-  localStorage.setItem(ANALYTICS_DB_KEY, JSON.stringify(data));
+  await apiFetch<{ ok: boolean }>('/analytics', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
 };
 
 export const updateAnalyticsOnDrillComplete = async (result: DrillResult): Promise<void> => {
   const data = await getAnalytics();
-  
-  // Update stats that apply to all modes
+
   data.totalDrillsCompleted += 1;
   data.drillsByType[result.disasterType] = (data.drillsByType[result.disasterType] || 0) + 1;
 
-  // Only update score-based analytics for Standard drills
   if (result.mode === 'Standard' && result.score !== undefined && result.totalQuestions !== undefined) {
     const { disasterType, score, totalQuestions } = result;
 

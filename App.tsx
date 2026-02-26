@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { DisasterType, View, User, UserRole, Theme, Difficulty, DrillResult, ProgressionSummary, DrillMode } from './types';
 import Header from './components/Header';
 import Home from './components/Home';
@@ -22,7 +22,6 @@ import * as authService from './services/authService';
 import * as analyticsService from './services/analyticsService';
 import * as progressionService from './services/progressionService';
 
-// Define a type for the temporary authentication information
 type AuthInfo = {
   flow: 'signup' | 'forgotPassword';
   email: string;
@@ -34,11 +33,98 @@ type AuthInfo = {
   otpHint?: string;
 };
 
+const VIEW_PATHS: Record<View, string> = {
+  welcome: '/',
+  signup: '/signup',
+  login: '/login',
+  verifyOtp: '/verify-otp',
+  home: '/home',
+  modules: '/modules',
+  drills: '/drills',
+  drill: '/drill',
+  dashboard: '/dashboard',
+  contacts: '/contacts',
+  profile: '/profile',
+  registerInstitution: '/register-institution',
+  forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
+  videoLessons: '/video-lessons',
+};
+
+const AUTH_VIEWS = new Set<View>(['welcome', 'signup', 'login', 'verifyOtp', 'forgotPassword', 'resetPassword']);
+
+const getViewFromPath = (pathname: string): View => {
+  switch (pathname) {
+    case '/':
+    case '/welcome':
+      return 'welcome';
+    case '/signup':
+      return 'signup';
+    case '/login':
+      return 'login';
+    case '/verify-otp':
+      return 'verifyOtp';
+    case '/home':
+      return 'home';
+    case '/modules':
+      return 'modules';
+    case '/drills':
+      return 'drills';
+    case '/drill':
+      return 'drill';
+    case '/dashboard':
+      return 'dashboard';
+    case '/contacts':
+      return 'contacts';
+    case '/profile':
+      return 'profile';
+    case '/register-institution':
+      return 'registerInstitution';
+    case '/forgot-password':
+      return 'forgotPassword';
+    case '/reset-password':
+      return 'resetPassword';
+    case '/video-lessons':
+      return 'videoLessons';
+    default:
+      return 'welcome';
+  }
+};
+
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>('welcome');
+  const [pathname, setPathname] = useState<string>(() => window.location.pathname);
+
+  const navigateToPath = useCallback((path: string, replace = false) => {
+    if (window.location.pathname === path) return;
+    if (replace) {
+      window.history.replaceState({}, '', path);
+    } else {
+      window.history.pushState({}, '', path);
+    }
+    setPathname(path);
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setPathname(window.location.pathname);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const currentView = useMemo(() => getViewFromPath(pathname), [pathname]);
+  const setView = useCallback((view: View) => {
+    navigateToPath(VIEW_PATHS[view]);
+  }, [navigateToPath]);
+  const replaceView = useCallback((view: View) => {
+    navigateToPath(VIEW_PATHS[view], true);
+  }, [navigateToPath]);
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authInfo, setAuthInfo] = useState<AuthInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [startupError, setStartupError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [selectedDisaster, setSelectedDisaster] = useState<DisasterType | null>(null);
@@ -47,13 +133,13 @@ const App: React.FC = () => {
   const [selectedMode, setSelectedMode] = useState<DrillMode>('Standard');
 
   const [lastDrillResult, setLastDrillResult] = useState<ProgressionSummary | null>(null);
-  
+
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-        return localStorage.getItem('theme') as Theme;
+      return localStorage.getItem('theme') as Theme;
     }
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
+      return 'dark';
     }
     return 'light';
   });
@@ -64,32 +150,66 @@ const App: React.FC = () => {
     root.classList.add(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
-  
+
   const toggleTheme = useCallback(() => {
-      setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   }, []);
 
   useEffect(() => {
     const initializeApp = async () => {
+      try {
+        setStartupError(null);
         await authService.seedInitialUsers();
         const loggedInUser = await authService.checkSession();
         if (loggedInUser) {
-            setCurrentUser(loggedInUser);
-            setCurrentView('home');
+          setCurrentUser(loggedInUser);
         }
+      } catch (error) {
+        console.error('[CrisisGuardian] App startup failed:', error);
+        setStartupError('Could not connect to the backend API. Please ensure the API server is running.');
+      } finally {
         setIsLoading(false);
+      }
     };
     initializeApp();
   }, []);
 
   useEffect(() => {
+    if (isLoading) return;
+
+    if (!currentUser && !AUTH_VIEWS.has(currentView)) {
+      replaceView('welcome');
+      return;
+    }
+
+    if (currentUser && AUTH_VIEWS.has(currentView)) {
+      replaceView('home');
+      return;
+    }
+
+    if (currentUser && currentView === 'dashboard' && currentUser.role !== UserRole.Admin) {
+      replaceView('home');
+      return;
+    }
+
+    if (currentUser && currentView === 'registerInstitution' && currentUser.role !== UserRole.Admin) {
+      replaceView('home');
+      return;
+    }
+
+    if (currentUser && currentView === 'drill' && !selectedDisaster) {
+      replaceView('drills');
+    }
+  }, [currentUser, currentView, isLoading, replaceView, selectedDisaster]);
+
+  useEffect(() => {
     if (isSidebarOpen) {
-        document.body.classList.add('no-scroll');
+      document.body.classList.add('no-scroll');
     } else {
-        document.body.classList.remove('no-scroll');
+      document.body.classList.remove('no-scroll');
     }
     return () => {
-        document.body.classList.remove('no-scroll');
+      document.body.classList.remove('no-scroll');
     };
   }, [isSidebarOpen]);
 
@@ -98,11 +218,11 @@ const App: React.FC = () => {
     if (user) {
       await authService.createSession(user);
       setCurrentUser(user);
-      setCurrentView('home');
+      setView('home');
       return true;
     }
     return false;
-  }, []);
+  }, [setView]);
 
   const handleStartSignup = useCallback((details: {
     name: string,
@@ -114,90 +234,86 @@ const App: React.FC = () => {
   }) => {
     const otpHint = authService.sendOtp(details.email);
     setAuthInfo({ flow: 'signup', ...details, otpHint });
-    setCurrentView('verifyOtp');
-  }, []);
+    setView('verifyOtp');
+  }, [setView]);
 
   const handleStartForgotPassword = useCallback(async (email: string): Promise<boolean> => {
-      const userExists = await authService.findUserByEmail(email);
-      if (userExists) {
-          const otpHint = authService.sendOtp(email);
-          setAuthInfo({ flow: 'forgotPassword', email, otpHint });
-          setCurrentView('verifyOtp');
-          return true;
-      }
-      return false; // User does not exist, but we won't reveal this to the user for security.
-  }, []);
+    const userExists = await authService.findUserByEmail(email);
+    if (userExists) {
+      const otpHint = authService.sendOtp(email);
+      setAuthInfo({ flow: 'forgotPassword', email, otpHint });
+      setView('verifyOtp');
+      return true;
+    }
+    return false;
+  }, [setView]);
 
   const handleResetPassword = useCallback(async (password: string): Promise<void> => {
-      if (authInfo?.flow === 'forgotPassword') {
-          await authService.updatePassword(authInfo.email, password);
-          setAuthInfo(null);
-          setCurrentView('login');
-      }
-  }, [authInfo]);
+    if (authInfo?.flow === 'forgotPassword') {
+      await authService.updatePassword(authInfo.email, password);
+      setAuthInfo(null);
+      setView('login');
+    }
+  }, [authInfo, setView]);
 
-  const handleOtpVerified = useCallback(async (email: string) => {
+  const handleOtpVerified = useCallback(async (_email: string) => {
     const { flow } = authInfo || {};
 
     if (flow === 'signup') {
-        if (authInfo?.name && authInfo?.role && authInfo?.institution && authInfo?.password) {
-            // Normal signup path for a new user
-            const newUser: User = {
-                name: authInfo.name,
-                email: authInfo.email,
-                phone: authInfo.phone,
-                role: authInfo.role,
-                institution: authInfo.institution,
-                password: authInfo.password,
-                score: 0,
-                avatar: DEFAULT_AVATARS[0].id,
-                drillHistory: [],
-                xp: 0,
-                level: 1,
-// FIX: Add missing 'trophies' property for new user creation.
-                trophies: 0,
-                streak: { count: 0, lastActivityDate: null },
-                unlockedAchievements: [],
-            };
-            await authService.createUser(newUser);
-            await authService.createSession(newUser);
-            setCurrentUser(newUser);
-            setCurrentView('home');
-            setAuthInfo(null); // Clear after use
-        } else {
-            setCurrentView('signup'); // Incomplete signup data
-            setAuthInfo(null);
-        }
-    } else if (flow === 'forgotPassword') {
-        // OTP is verified, now let user reset the password.
-        // Don't clear authInfo yet, we need the email for the next step.
-        setCurrentView('resetPassword');
-    } else {
-        setCurrentView('welcome');
+      if (authInfo?.name && authInfo?.role && authInfo?.institution && authInfo?.password) {
+        const newUser: User = {
+          name: authInfo.name,
+          email: authInfo.email,
+          phone: authInfo.phone,
+          role: authInfo.role,
+          institution: authInfo.institution,
+          password: authInfo.password,
+          score: 0,
+          avatar: DEFAULT_AVATARS[0].id,
+          drillHistory: [],
+          xp: 0,
+          level: 1,
+          trophies: 0,
+          streak: { count: 0, lastActivityDate: null },
+          unlockedAchievements: [],
+        };
+        await authService.createUser(newUser);
+        await authService.createSession(newUser);
+        setCurrentUser(newUser);
+        setView('home');
         setAuthInfo(null);
+      } else {
+        setView('signup');
+        setAuthInfo(null);
+      }
+    } else if (flow === 'forgotPassword') {
+      setView('resetPassword');
+    } else {
+      setView('welcome');
+      setAuthInfo(null);
     }
-  }, [authInfo]);
+  }, [authInfo, setView]);
 
   const handleLogout = useCallback(async () => {
     await authService.clearSession();
     setCurrentUser(null);
-    setCurrentView('welcome');
-  }, []);
+    setView('welcome');
+  }, [setView]);
 
   const handleStartDrill = useCallback((disasterType: DisasterType, difficulty: Difficulty, mode: DrillMode) => {
     setSelectedDisaster(disasterType);
     setSelectedDifficulty(difficulty);
     setSelectedMode(mode);
-    setCurrentView('drill');
-  }, []);
+    setView('drill');
+  }, [setView]);
 
   const handleDrillComplete = useCallback(async (result: {
-      disasterType: DisasterType;
-      difficulty: Difficulty;
-      mode: DrillMode;
-      score?: number;
-      totalQuestions?: number;
-      stepsSurvived?: number;
+    disasterType: DisasterType;
+    difficulty: Difficulty;
+    mode: DrillMode;
+    score?: number;
+    totalQuestions?: number;
+    stepsSurvived?: number;
   }) => {
     if (!currentUser) return;
 
@@ -208,54 +324,52 @@ const App: React.FC = () => {
     };
 
     const { updatedUser, summary } = progressionService.processActivityCompletion(currentUser, {
-        type: 'drill',
-        details: newDrillEntry,
+      type: 'drill',
+      details: newDrillEntry,
     });
-    
+
     setCurrentUser(updatedUser);
     setLastDrillResult(summary);
     await authService.createSession(updatedUser);
     await analyticsService.updateAnalyticsOnDrillComplete(newDrillEntry);
-
   }, [currentUser]);
-  
+
   const handleCloseSummary = () => {
-      setLastDrillResult(null);
-      // Optional: navigate back to drills lobby after summary
-      setCurrentView('drills');
-  }
+    setLastDrillResult(null);
+    setView('drills');
+  };
 
   const renderAuthView = () => {
-      switch (currentView) {
-          case 'welcome':
-              return <Welcome setView={setCurrentView} />;
-          case 'login':
-              return <Login onLogin={handleLogin} setView={setCurrentView} />;
-          case 'signup':
-              return <Signup onStartSignup={handleStartSignup} setView={setCurrentView} />;
-          case 'forgotPassword':
-              return <ForgotPassword onStartForgotPassword={handleStartForgotPassword} setView={setCurrentView} />;
-          case 'resetPassword':
-              if (authInfo?.flow === 'forgotPassword') {
-                  return <ResetPassword onResetPassword={handleResetPassword} />;
-              }
-              return <Login onLogin={handleLogin} setView={setCurrentView} />;
-          case 'verifyOtp':
-              if (authInfo) {
-                  return <VerifyOtp authInfo={authInfo} onVerified={handleOtpVerified} otpHint={authInfo.otpHint} />;
-              }
-              return <Login onLogin={handleLogin} setView={setCurrentView} />;
-          default:
-              return <Welcome setView={setCurrentView} />;
-      }
+    switch (currentView) {
+      case 'welcome':
+        return <Welcome setView={setView} />;
+      case 'login':
+        return <Login onLogin={handleLogin} setView={setView} />;
+      case 'signup':
+        return <Signup onStartSignup={handleStartSignup} setView={setView} />;
+      case 'forgotPassword':
+        return <ForgotPassword onStartForgotPassword={handleStartForgotPassword} setView={setView} />;
+      case 'resetPassword':
+        if (authInfo?.flow === 'forgotPassword') {
+          return <ResetPassword onResetPassword={handleResetPassword} />;
+        }
+        return <Login onLogin={handleLogin} setView={setView} />;
+      case 'verifyOtp':
+        if (authInfo) {
+          return <VerifyOtp authInfo={authInfo} onVerified={handleOtpVerified} otpHint={authInfo.otpHint} />;
+        }
+        return <Login onLogin={handleLogin} setView={setView} />;
+      default:
+        return <Welcome setView={setView} />;
+    }
   };
 
   const renderAppView = () => {
-    if (!currentUser) return null; // Should not happen if this function is called
+    if (!currentUser) return null;
 
     switch (currentView) {
       case 'home':
-        return <Home setView={setCurrentView} user={currentUser} />;
+        return <Home setView={setView} user={currentUser} />;
       case 'modules':
         return <EducationModules />;
       case 'videoLessons':
@@ -266,73 +380,90 @@ const App: React.FC = () => {
         if (selectedDisaster) {
           return <VirtualDrill disasterType={selectedDisaster} region={selectedRegion} difficulty={selectedDifficulty} mode={selectedMode} onDrillComplete={handleDrillComplete} />;
         }
-        return <Home setView={setCurrentView} user={currentUser} />; // Fallback
+        return <Home setView={setView} user={currentUser} />;
       case 'dashboard':
         if (currentUser.role === UserRole.Admin) {
-          return <AdminDashboard setView={setCurrentView} theme={theme} />;
+          return <AdminDashboard setView={setView} theme={theme} />;
         }
-        return <Home setView={setCurrentView} user={currentUser} />; // Fallback
+        return <Home setView={setView} user={currentUser} />;
       case 'contacts':
         return <EmergencyContacts />;
       case 'profile':
-        return <Profile 
-            user={currentUser} 
-            setUser={async (updatedUser) => {
-                setCurrentUser(updatedUser);
-                await authService.createSession(updatedUser); // Update session storage
-            }} 
-            setView={setCurrentView} 
-            onLogout={handleLogout}
-            region={selectedRegion}
-            setRegion={setSelectedRegion}
+        return <Profile
+          user={currentUser}
+          setUser={async (updatedUser) => {
+            setCurrentUser(updatedUser);
+            await authService.createSession(updatedUser);
+          }}
+          setView={setView}
+          onLogout={handleLogout}
+          region={selectedRegion}
+          setRegion={setSelectedRegion}
         />;
       case 'registerInstitution':
-          if (currentUser.role === UserRole.Admin) {
-              return <RegisterInstitution setView={setCurrentView} />;
-          }
-          return <Home setView={setCurrentView} user={currentUser} />; // Fallback
+        if (currentUser.role === UserRole.Admin) {
+          return <RegisterInstitution setView={setView} />;
+        }
+        return <Home setView={setView} user={currentUser} />;
       default:
-        return <Home setView={setCurrentView} user={currentUser} />;
+        return <Home setView={setView} user={currentUser} />;
     }
   };
-  
+
   if (isLoading) {
-    return <div className="min-h-screen bg-[--brand-bg] dark:bg-[--dark-bg]" />; // Or a loading spinner
+    return <div className="min-h-screen bg-[--brand-bg] dark:bg-[--dark-bg]" />;
+  }
+
+  if (startupError && !currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[--brand-bg] dark:bg-[--dark-bg]">
+        <div className="max-w-xl w-full bg-white dark:bg-[--dark-surface] rounded-3xl soft-shadow p-8 text-center">
+          <h1 className="text-3xl font-bold mb-4">Startup Error</h1>
+          <p className="text-[--brand-slate] mb-6">{startupError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-[--brand-purple] text-white font-bold py-3 px-6 rounded-2xl hover:bg-purple-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!currentUser) {
     return (
-      <div key={currentView} className="view-container-animation">
+      <div key={pathname} className="view-container-animation">
         {renderAuthView()}
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen flex flex-col">
-       <Header 
-          currentView={currentView} 
-          setView={setCurrentView} 
-          user={currentUser}
-          theme={theme}
-          toggleTheme={toggleTheme}
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
-        />
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div key={currentView} className="view-container-animation">
+      <Header
+        currentView={currentView}
+        setView={setView}
+        user={currentUser}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
+      <main className="flex-grow w-full px-4 sm:px-6 lg:px-10 py-12 md:py-16">
+        <div key={pathname} className="view-container-animation">
           {renderAppView()}
         </div>
       </main>
       {lastDrillResult && currentUser && (
-          <PostActivitySummary 
-              summary={lastDrillResult} 
-              user={currentUser} 
-              onClose={handleCloseSummary}
-          />
+        <PostActivitySummary
+          summary={lastDrillResult}
+          user={currentUser}
+          onClose={handleCloseSummary}
+        />
       )}
       <footer className="text-center py-8 text-sm text-[--brand-slate]">
-          <p>&copy; {new Date().getFullYear()} CrisisGuardian. Secure. Smart. Prepared.</p>
+        <p>&copy; {new Date().getFullYear()} CrisisGuardian. Secure. Smart. Prepared.</p>
       </footer>
     </div>
   );

@@ -22,17 +22,19 @@ const Avatar: React.FC<{ avatar: string; className?: string }> = ({ avatar, clas
 };
 
 const XpProgress: React.FC<{ user: User }> = ({ user }) => {
-    const xpForCurrentLevel = getXpForLevel(user.level);
-    const xpForNextLevel = getXpForLevel(user.level + 1);
+    const level = Number.isFinite(user.level) ? user.level : 1;
+    const xp = Number.isFinite(user.xp) ? user.xp : 0;
+    const xpForCurrentLevel = getXpForLevel(level);
+    const xpForNextLevel = getXpForLevel(level + 1);
     const levelXp = xpForNextLevel - xpForCurrentLevel;
-    const currentLevelProgress = user.xp - xpForCurrentLevel;
+    const currentLevelProgress = xp - xpForCurrentLevel;
     const progressPercentage = Math.max(0, Math.min(100, (currentLevelProgress / levelXp) * 100));
 
     return (
         <div className="w-full">
             <div className="flex justify-between items-baseline mb-1">
-                <p className="text-xl font-bold">Level {user.level}</p>
-                <p className="text-sm font-medium text-[--brand-slate]">{user.xp} / {xpForNextLevel} XP</p>
+                <p className="text-xl font-bold">Level {level}</p>
+                <p className="text-sm font-medium text-[--brand-slate]">{xp} / {xpForNextLevel} XP</p>
             </div>
             <div className="w-full bg-black/10 dark:bg-white/10 rounded-full h-2.5">
                 <div 
