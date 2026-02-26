@@ -41,10 +41,12 @@ const Avatar: React.FC<{ avatar: string; className?: string }> = ({ avatar, clas
 };
 
 const XpBar: React.FC<{ user: User }> = ({ user }) => {
-    const xpForCurrentLevel = getXpForLevel(user.level);
-    const xpForNextLevel = getXpForLevel(user.level + 1);
+    const level = Number.isFinite(user.level) ? user.level : 1;
+    const xp = Number.isFinite(user.xp) ? user.xp : 0;
+    const xpForCurrentLevel = getXpForLevel(level);
+    const xpForNextLevel = getXpForLevel(level + 1);
     const levelXp = xpForNextLevel - xpForCurrentLevel;
-    const currentLevelProgress = user.xp - xpForCurrentLevel;
+    const currentLevelProgress = xp - xpForCurrentLevel;
     const progressPercentage = Math.max(0, Math.min(100, (currentLevelProgress / levelXp) * 100));
 
     return (
@@ -126,10 +128,10 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, togg
                         <TrophyIcon className="h-5 w-5 text-[--brand-purple]" />
                         <span>{user.trophies || 0}</span>
                     </div>
-                    {user.streak.count > 0 && (
+                    {(user.streak?.count || 0) > 0 && (
                         <div className="flex items-center gap-1 text-[--brand-purple] font-bold text-sm bg-purple-500/10 dark:bg-purple-500/20 px-3 py-1.5 rounded-full">
                             <FireIcon className="h-5 w-5" />
-                            <span>{user.streak.count}</span>
+                            <span>{user.streak?.count || 0}</span>
                         </div>
                     )}
                     <button
@@ -148,7 +150,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, togg
                         <div className="ml-2 text-left flex-grow">
                             <div className="flex items-center gap-2">
                                 <span className="font-bold text-[--brand-text] dark:text-[--dark-text] text-sm truncate">{user.name}</span>
-                                <span className="bg-[--brand-purple] text-white text-xs font-bold px-2 py-0.5 rounded-full">Lvl {user.level}</span>
+                                <span className="bg-[--brand-purple] text-white text-xs font-bold px-2 py-0.5 rounded-full">Lvl {user.level || 1}</span>
                             </div>
                             <XpBar user={user} />
                         </div>
@@ -212,10 +214,10 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, user, theme, togg
                                     <TrophyIcon className="h-4 w-4 text-slate-300" />
                                     <span>{user.trophies || 0}</span>
                                 </div>
-                                {user.streak.count > 0 && (
+                                {(user.streak?.count || 0) > 0 && (
                                     <div className="flex items-center gap-1 text-[--brand-yellow] font-bold">
                                         <FireIcon className="h-4 w-4" />
-                                        <span>{user.streak.count}</span>
+                                        <span>{user.streak?.count || 0}</span>
                                     </div>
                                 )}
                              </div>

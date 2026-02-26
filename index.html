@@ -11,19 +11,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* New WonderKids Theme Palette */
-      --brand-purple: #6A44D2;
-      --brand-yellow: #FFD15C;
-      --brand-light-purple: #E8E4F9;
-      --brand-bg: #F7F5FD;
-      --brand-text: #3D2C7A;
-      --brand-slate: #7B72A4;
-      --brand-white: #FFFFFF;
+      /* Light Theme */
+      --brand-purple: #5f3dc4;
+      --brand-yellow: #ffc84a;
+      --brand-light-purple: #ece6ff;
+      --brand-bg: #f6f4ff;
+      --brand-text: #2f1f66;
+      --brand-slate: #655b88;
+      --brand-white: #ffffff;
 
-      /* Dark Mode Palette */
-      --dark-bg: #1A103A;
-      --dark-surface: #291E52;
-      --dark-text: #E8E4F9;
+      /* Dark Theme */
+      --dark-bg: #0f1428;
+      --dark-surface: #1a2242;
+      --dark-text: #eaf0ff;
+      --dark-muted: #b8c2e8;
+      --dark-border: rgba(255, 255, 255, 0.12);
+      --light-border: rgba(47, 31, 102, 0.12);
 
       --font-heading: 'Fredoka', sans-serif;
       --font-body: 'Plus Jakarta Sans', sans-serif;
@@ -32,15 +35,35 @@
     body {
       font-family: var(--font-body);
       background-color: var(--brand-bg);
-      background-image: radial-gradient(circle at top left, var(--brand-light-purple), var(--brand-bg) 40%);
+      background-image:
+        radial-gradient(circle at 0% 0%, #ffffff 0%, var(--brand-light-purple) 28%, transparent 55%),
+        radial-gradient(circle at 100% 0%, #fdf8d8 0%, transparent 40%),
+        linear-gradient(135deg, #faf8ff 0%, #f3f0ff 100%);
       color: var(--brand-text);
       background-attachment: fixed;
+      text-rendering: optimizeLegibility;
+      transition: background-color 220ms ease, background-image 220ms ease, color 220ms ease;
+    }
+
+    html, body, #root {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      overflow-x: hidden;
     }
 
     .dark body {
-        background-color: var(--dark-bg);
-        background-image: radial-gradient(circle at top left, var(--dark-surface), var(--dark-bg) 40%);
-        color: var(--dark-text);
+      background-color: var(--dark-bg);
+      background-image:
+        radial-gradient(circle at 15% 0%, #24305d 0%, rgba(36, 48, 93, 0.2) 28%, transparent 56%),
+        radial-gradient(circle at 85% 0%, rgba(95, 61, 196, 0.28) 0%, transparent 34%),
+        linear-gradient(135deg, #101833 0%, #0d1329 100%);
+      color: var(--dark-text);
+      color-scheme: dark;
     }
 
     h1, h2, h3, .font-heading {
@@ -49,7 +72,31 @@
       color: var(--brand-text);
     }
     .dark h1, .dark h2, .dark h3, .dark .font-heading {
-       color: var(--dark-text);
+      color: var(--dark-text);
+    }
+
+    p, label, span, li, td, th {
+      transition: color 180ms ease;
+    }
+
+    .dark p, .dark label, .dark span, .dark li, .dark td, .dark th {
+      color: var(--dark-muted);
+    }
+
+    input, textarea, select {
+      border-color: var(--light-border);
+      color: var(--brand-text);
+      transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .dark input, .dark textarea, .dark select {
+      border-color: var(--dark-border);
+      color: var(--dark-text);
+    }
+
+    :focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--brand-purple) 72%, white);
+      outline-offset: 2px;
     }
     
     .no-scroll {
@@ -57,12 +104,18 @@
     }
     
     .soft-shadow {
-      box-shadow: 0 4px 12px rgba(106, 68, 210, 0.08);
+      box-shadow: 0 6px 18px rgba(55, 42, 118, 0.12);
       transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .dark .soft-shadow {
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
     }
     .soft-shadow-hover:hover {
       transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 10px 25px rgba(106, 68, 210, 0.15);
+      box-shadow: 0 14px 30px rgba(55, 42, 118, 0.22);
+    }
+    .dark .soft-shadow-hover:hover {
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.48), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
     }
 
     .highlight-yellow {
