@@ -69,29 +69,19 @@
     h1, h2, h3, .font-heading {
       font-family: var(--font-heading);
       font-weight: 600;
-      color: var(--brand-text);
-    }
-    .dark h1, .dark h2, .dark h3, .dark .font-heading {
-      color: var(--dark-text);
     }
 
     p, label, span, li, td, th {
       transition: color 180ms ease;
     }
 
-    .dark p, .dark label, .dark span, .dark li, .dark td, .dark th {
-      color: var(--dark-muted);
-    }
-
     input, textarea, select {
       border-color: var(--light-border);
-      color: var(--brand-text);
       transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
     }
 
     .dark input, .dark textarea, .dark select {
       border-color: var(--dark-border);
-      color: var(--dark-text);
     }
 
     :focus-visible {
@@ -194,6 +184,25 @@
     }
     @keyframes chat-bubble-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .animate-chat-bubble-in { animation: chat-bubble-in 0.4s ease-out forwards; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .animate-shake,
+      .animate-fire,
+      .animate-chat-bubble-in,
+      .animate-fade-in-up,
+      .view-container-animation,
+      .wind-line {
+        animation: none !important;
+      }
+      .soft-shadow-hover:hover {
+        transform: none !important;
+      }
+      .flood-overlay {
+        animation: none !important;
+        height: 18%;
+        opacity: 0.55;
+      }
+    }
   </style>
   <script>
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
