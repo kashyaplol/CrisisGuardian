@@ -18,6 +18,23 @@ interface VirtualDrillProps {
   }) => void;
 }
 
+const isValidDrillStep = (step: DrillStep | null): step is DrillStep => {
+  if (!step || typeof step !== 'object') return false;
+  if (typeof step.scenario !== 'string' || typeof step.question !== 'string' || typeof step.aiAdvice !== 'string') {
+    return false;
+  }
+  if (!Array.isArray(step.options) || step.options.length === 0) {
+    return false;
+  }
+  return step.options.every(
+    (option) =>
+      option &&
+      typeof option.text === 'string' &&
+      typeof option.feedback === 'string' &&
+      typeof option.isCorrect === 'boolean'
+  );
+};
+
 const LoadingState: React.FC<{ message: string }> = ({ message }) => (
     <div className="flex flex-col items-center justify-center text-center p-8">
         <ArrowPathIcon className="h-12 w-12 text-[--brand-purple] animate-spin mb-4" />
@@ -90,17 +107,44 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
   // --- Audio Setup ---
   const audioContextRef = useRef<AudioContext | null>(null);
   const ambientSourceRef = useRef<AudioNode | null>(null);
+  const inFlightRequestRef = useRef<AbortController | null>(null);
+  const pendingTimeoutsRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
+  const requestSequenceRef = useRef(0);
+
+  const abortInFlightRequest = useCallback(() => {
+    if (inFlightRequestRef.current) {
+      inFlightRequestRef.current.abort();
+      inFlightRequestRef.current = null;
+    }
+  }, []);
+
+  const clearPendingTimeouts = useCallback(() => {
+    pendingTimeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+    pendingTimeoutsRef.current = [];
+  }, []);
+
+  const runAfterDelay = useCallback((callback: () => void, delayMs = 3000) => {
+    const timeoutId = setTimeout(() => {
+      pendingTimeoutsRef.current = pendingTimeoutsRef.current.filter((id) => id !== timeoutId);
+      callback();
+    }, delayMs);
+    pendingTimeoutsRef.current.push(timeoutId);
+  }, []);
 
   useEffect(() => {
     if (!audioContextRef.current) {
+      try {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      } catch (audioError) {
+        console.warn('Audio context unavailable in this browser:', audioError);
+      }
     }
     return () => {
-        if (ambientSourceRef.current) {
-            (ambientSourceRef.current as any).stop?.();
-            ambientSourceRef.current.disconnect();
-        }
-        audioContextRef.current?.close();
+      if (ambientSourceRef.current) {
+        (ambientSourceRef.current as any).stop?.();
+        ambientSourceRef.current.disconnect();
+      }
+      audioContextRef.current?.close();
     };
   }, []);
 
@@ -198,6 +242,11 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
   }, [stopAmbientSound]);
 
   const startDrill = useCallback(async () => {
+    abortInFlightRequest();
+    clearPendingTimeouts();
+    const requestId = requestSequenceRef.current + 1;
+    requestSequenceRef.current = requestId;
+
     setIsLoading(true);
     setError(false);
     setCurrentStep(null);
@@ -212,32 +261,47 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
     setLoadingMessage(isSurvival ? 'Generating first survival scenario...' : `Generating scenario 1 of ${totalSteps}...`);
     
     playAmbientSound(disasterType);
-    const scenario = await generateDrillScenario(disasterType, region, mode);
+    const controller = new AbortController();
+    inFlightRequestRef.current = controller;
+    const scenario = await generateDrillScenario(disasterType, region, mode, undefined, controller.signal);
+
+    if (controller.signal.aborted || requestSequenceRef.current !== requestId) {
+      return;
+    }
+    inFlightRequestRef.current = null;
     
-    if (scenario) {
+    if (isValidDrillStep(scenario)) {
       setCurrentStep(scenario);
     } else {
       setError(true);
       stopAmbientSound();
     }
     setIsLoading(false);
-  }, [disasterType, region, mode, playAmbientSound, stopAmbientSound, totalSteps, isSurvival]);
+  }, [abortInFlightRequest, clearPendingTimeouts, disasterType, region, mode, playAmbientSound, stopAmbientSound, totalSteps, isSurvival]);
 
   useEffect(() => {
     startDrill();
-    return () => stopAmbientSound();
-  }, [startDrill, stopAmbientSound]);
+    return () => {
+      abortInFlightRequest();
+      clearPendingTimeouts();
+      stopAmbientSound();
+    };
+  }, [startDrill, abortInFlightRequest, clearPendingTimeouts, stopAmbientSound]);
   
   const handleNextStep = useCallback(async (selectedOption: DrillStepOption) => {
-    if (!currentStep) return;
+    if (!currentStep || isLoading) return;
     
     const currentStepIndex = pastSteps.length + 1;
     if (!isSurvival && currentStepIndex >= totalSteps) {
+        abortInFlightRequest();
         setIsDrillFinished(true);
         stopAmbientSound();
         return;
     }
 
+    abortInFlightRequest();
+    const requestId = requestSequenceRef.current + 1;
+    requestSequenceRef.current = requestId;
     setIsLoading(true);
     setLoadingMessage(isSurvival ? `Generating next survival scenario...` : `Generating scenario ${currentStepIndex + 1} of ${totalSteps}...`);
     setPastSteps(prev => [...prev, currentStep]);
@@ -250,9 +314,16 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
         stepsSurvived: isSurvival ? score + 1 : undefined,
     };
     
-    const nextScenario = await generateDrillScenario(disasterType, region, mode, previousStepContext);
+    const controller = new AbortController();
+    inFlightRequestRef.current = controller;
+    const nextScenario = await generateDrillScenario(disasterType, region, mode, previousStepContext, controller.signal);
+
+    if (controller.signal.aborted || requestSequenceRef.current !== requestId) {
+      return;
+    }
+    inFlightRequestRef.current = null;
     
-    if (nextScenario) {
+    if (isValidDrillStep(nextScenario)) {
         setCurrentStep(nextScenario);
         setSelectedOptionIndex(null);
         setIsAnswered(false);
@@ -262,31 +333,39 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
         stopAmbientSound();
     }
     setIsLoading(false);
-  }, [currentStep, pastSteps, totalSteps, disasterType, region, stopAmbientSound, isSurvival, mode, score]);
+  }, [currentStep, isLoading, pastSteps, totalSteps, disasterType, region, stopAmbientSound, isSurvival, mode, score, abortInFlightRequest]);
 
-  const handleOptionSelect = (index: number) => {
-    if (isAnswered || !currentStep) return;
+  const handleOptionSelect = useCallback((index: number) => {
+    if (isAnswered || isLoading || !currentStep) return;
+    const selectedOption = currentStep.options[index];
+    if (!selectedOption) return;
 
     setSelectedOptionIndex(index);
     setIsAnswered(true);
 
-    const isCorrect = currentStep.options[index].isCorrect;
+    const isCorrect = selectedOption.isCorrect;
     playFeedbackSound(isCorrect);
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      setTimeout(() => handleNextStep(currentStep.options[index]), 3000);
-    } else {
-      if (isSurvival) {
-        setTimeout(() => {
-          setIsDrillFinished(true);
-          stopAmbientSound();
-        }, 3000);
-      } else {
-        setTimeout(() => handleNextStep(currentStep.options[index]), 3000);
-      }
+      runAfterDelay(() => {
+        void handleNextStep(selectedOption);
+      });
+      return;
     }
-  };
+
+    if (isSurvival) {
+      runAfterDelay(() => {
+        setIsDrillFinished(true);
+        stopAmbientSound();
+      });
+      return;
+    }
+
+    runAfterDelay(() => {
+      void handleNextStep(selectedOption);
+    });
+  }, [isAnswered, isLoading, currentStep, playFeedbackSound, runAfterDelay, handleNextStep, isSurvival, stopAmbientSound]);
   
   useEffect(() => {
     if (isDrillFinished && !hasReportedCompletion) {
@@ -305,8 +384,10 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
       return "bg-white dark:bg-[--dark-surface] hover:bg-black/5 dark:hover:bg-white/10 soft-shadow soft-shadow-hover";
     }
     if (!currentStep) return "";
+    const option = currentStep.options[index];
+    if (!option) return "bg-black/5 opacity-70 dark:bg-white/10";
     const isSelected = selectedOptionIndex === index;
-    const isCorrect = currentStep.options[index].isCorrect;
+    const isCorrect = option.isCorrect;
 
     if (isCorrect) return "bg-green-500/10 border-green-500 ring-2 ring-green-500 dark:bg-green-500/20";
     if (isSelected && !isCorrect) return "bg-red-500/10 border-red-500 ring-2 ring-red-500 dark:bg-red-500/20";
@@ -323,7 +404,9 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
     }
   }, [disasterType, isDrillFinished, isLoading, error]);
   
-  const progressPercentage = (pastSteps.length / totalSteps) * 100;
+  const progressPercentage = isSurvival
+    ? 0
+    : Math.min(100, Math.max(0, (pastSteps.length / totalSteps) * 100));
 
   if (isLoading && !currentStep) return <LoadingState message={loadingMessage} />;
   if (error) return <ErrorState onRetry={startDrill} />;
@@ -387,11 +470,11 @@ const VirtualDrill: React.FC<VirtualDrillProps> = ({ disasterType, region, diffi
 
                 <div className="grid grid-cols-1 gap-4">
                     {currentStep.options.map((option, index) => (
-                        <div key={index} className="relative animate-fade-in-up" style={{ animationDelay: `${index * 100}ms`}}>
+                        <div key={`${pastSteps.length}-${index}-${option.text}`} className="relative animate-fade-in-up" style={{ animationDelay: `${index * 100}ms`}}>
                             <button
                                 onClick={() => handleOptionSelect(index)}
-                                disabled={isAnswered}
-                                className={`w-full text-left p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300 flex items-start ${getOptionClasses(index)} ${!isAnswered ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                                disabled={isAnswered || isLoading}
+                                className={`w-full text-left p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300 flex items-start ${getOptionClasses(index)} ${!isAnswered && !isLoading ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                             >
                                 <span className="text-lg font-bold mr-4 text-[--brand-purple]">
                                     {String.fromCharCode(65 + index)}

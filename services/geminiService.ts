@@ -32,15 +32,19 @@ export const generateDrillScenario = async (
   disasterType: DisasterType,
   region: string,
   mode: DrillMode,
-  previousStepContext?: PreviousStepContext
+  previousStepContext?: PreviousStepContext,
+  signal?: AbortSignal
 ): Promise<DrillStep | null> => {
   try {
     return await apiFetch<DrillStep>('/ai/drill-scenario', {
       method: 'POST',
+      signal,
       body: JSON.stringify({ disasterType, region, mode, previousStepContext }),
     });
   } catch (error) {
-    console.error('Error generating drill scenario:', error);
+    if (!(error instanceof DOMException && error.name === 'AbortError')) {
+      console.error('Error generating drill scenario:', error);
+    }
     return null;
   }
 };
