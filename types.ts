@@ -28,7 +28,7 @@ export interface UnlockedAchievement {
 export interface User {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   phone?: string;
   role: UserRole;
   score: number; // This is now the average score percentage from STANDARD drills

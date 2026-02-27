@@ -20,9 +20,17 @@ This project now includes:
    npm install
    ```
 
-2. Set your Gemini key in `.env.local`:
+2. Set your backend env vars in `.env.local`:
    ```env
    GEMINI_API_KEY=your_api_key_here
+   JWT_SECRET=your_strong_random_secret_here
+   # Required to send OTPs by email
+   SMTP_HOST=smtp.yourprovider.com
+   SMTP_PORT=587
+   SMTP_SECURE=false
+   SMTP_USER=your_smtp_username
+   SMTP_PASS=your_smtp_password
+   SMTP_FROM="CrisisGuardian <no-reply@yourdomain.com>"
    ```
 
 3. Start frontend + API together:
@@ -42,6 +50,21 @@ This project now includes:
 - `npm run build` - production frontend build
 - `npm run start:api` - start API without watch mode
 
+## Security Notes
+
+- Authentication is handled server-side with HTTP-only signed session cookies.
+- Passwords are hashed (`bcrypt`) before storage.
+- Signup and password-reset OTPs are generated and verified server-side.
+- OTP emails are sent via SMTP when `SMTP_*` variables are configured.
+- AI calls are proxied through backend `/api/ai/*` routes so API keys are not exposed in the client bundle.
+
+## OTP Delivery Notes
+
+- Production: OTP codes are delivered only by email.
+- Local development:
+  - If SMTP is configured, OTP is sent to the email inbox.
+  - If SMTP is not configured, OTP is returned as `otpHint` in the API response for testing.
+
 ## Database Notes
 
 - SQLite file location: `data/crisisguardian.db`
@@ -59,16 +82,22 @@ This app can be deployed as a single Node service:
 ### Render (recommended)
 
 1. Push this repo to GitHub.
-2. In Render, create a **Web Service** from the repo.
-3. Set:
-   - Runtime: `Node`
-   - Build Command: `npm install && npm run build`
-   - Start Command: `npm start`
-4. Add environment variable:
+2. In Render, create a **Blueprint** from the repo (uses `render.yaml` in this project).
+3. Set these environment variables in Render:
    - `GEMINI_API_KEY=your_key`
-5. Add a **Persistent Disk** (important for SQLite persistence):
-   - Mount path: `/opt/render/project/src/data`
-6. Deploy.
+   - `SMTP_HOST=...`
+   - `SMTP_PORT=587`
+   - `SMTP_SECURE=false`
+   - `SMTP_USER=...`
+   - `SMTP_PASS=...`
+   - `SMTP_FROM=CrisisGuardian <no-reply@yourdomain.com>`
+4. Deploy.
+
+Notes:
+- On Render free tier, filesystem is ephemeral and SQLite data can reset on restarts/redeploys.
+- For persistence, upgrade plan and attach a disk mounted at `/opt/render/project/src/data`.
+- `FRONTEND_ORIGIN` is optional on Render because backend falls back to `RENDER_EXTERNAL_URL`.
+- If you do set `FRONTEND_ORIGIN`, use your exact Render app URL (for example, `https://your-app.onrender.com`).
 
 After deploy:
 - App URL: `https://<your-service>.onrender.com`
